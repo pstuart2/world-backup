@@ -1,0 +1,9 @@
+{
+  "port": 3030,
+  "staticRoot": "../client/dist/",
+  "path": "",
+  "log": {
+    "file": "",
+    "level": "debug"
+  }
+}
