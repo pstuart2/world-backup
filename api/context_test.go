@@ -7,8 +7,6 @@ import (
 	"net/http/httptest"
 	"strings"
 
-	"awana-app/server/data"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
@@ -64,30 +62,6 @@ func TestContext(t *testing.T) {
 
 			Convey("getToken should return that token", func() {
 				So(foundToken, ShouldEqual, token)
-			})
-
-		})
-
-		Convey("When that context does not have a dbSession", func() {
-			c := e.NewContext(req, rec)
-			foundDbSession := getAppDb(c)
-
-			Convey("getAppDb should return nil", func() {
-				So(foundDbSession, ShouldBeNil)
-			})
-
-		})
-
-		Convey("When that context has a dbSession", func() {
-			c := e.NewContext(req, rec)
-
-			db := data.AppDb{SaltHash: "something cool and diff"}
-			c.Set(dbKey, &db)
-
-			foundDbSession := getAppDb(c)
-
-			Convey("getAppDb should return the db", func() {
-				So(foundDbSession, ShouldPointTo, &db)
 			})
 
 		})

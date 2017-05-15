@@ -1,8 +1,6 @@
 package api
 
 import (
-	"awana-app/server/data"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
@@ -11,7 +9,6 @@ import (
 const (
 	tokenKey  = "app.token"
 	loggerKey = "app.logger"
-	dbKey     = "app.db"
 )
 
 func getLogger(ctx echo.Context) *logrus.Entry {
@@ -30,13 +27,4 @@ func getToken(ctx echo.Context) *jwt.Token {
 	}
 
 	return obj.(*jwt.Token)
-}
-
-func getAppDb(ctx echo.Context) data.IAppDb {
-	obj := ctx.Get(dbKey)
-	if obj == nil {
-		return nil
-	}
-
-	return obj.(data.IAppDb)
 }
