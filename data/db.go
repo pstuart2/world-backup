@@ -85,5 +85,5 @@ func (db *Db) Save() error {
 }
 
 func (db *Db) Close() {
-
+	db.Save()
 }

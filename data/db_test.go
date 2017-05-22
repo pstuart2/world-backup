@@ -5,24 +5,29 @@ import (
 
 	"time"
 
+	"os"
+
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/spf13/afero"
+	"github.com/ventu-io/go-shortid"
 )
 
 var db *Db
 var fs afero.Fs
 
-//func TestMain(m *testing.M) {
-//	dbName := "test_" + shortid.MustGenerate() + ".db"
-//	db = Open(dbName)
-//	defer db.Close()
-//
-//	code := m.Run()
-//
-//	fs = afero.NewOsFs()
-//	fs.Remove(dbName)
-//	os.Exit(code)
-//}
+func TestMain(m *testing.M) {
+	dbName := "test_" + shortid.MustGenerate() + ".json"
+
+	fs = afero.NewOsFs()
+	db = Open(dbName, fs)
+	defer func() {
+		fs.Remove(dbName)
+	}()
+
+	code := m.Run()
+
+	os.Exit(code)
+}
 
 func TestOpen(t *testing.T) {
 
@@ -34,10 +39,10 @@ func TestOpen(t *testing.T) {
 		getNow = func() time.Time { return before }
 		defer func() { getNow = oldGetNow }()
 
-		dbName := "somd.db"
+		dbName := "somd.json"
 
 		fs := afero.NewOsFs()
-		db := Open(dbName, fs)
+		localDb := Open(dbName, fs)
 
 		defer func() {
 			fs.Remove(dbName)
@@ -45,38 +50,32 @@ func TestOpen(t *testing.T) {
 
 		getNow = func() time.Time { return now }
 
-		So(db, ShouldNotBeNil)
-		So(db.name, ShouldEqual, dbName)
-		So(db.data.CreatedAt.UnixNano(), ShouldEqual, before.UnixNano())
-		So(db.data.LastSave.UnixNano(), ShouldEqual, -6795364578871345152)
+		So(localDb, ShouldNotBeNil)
+		So(localDb.name, ShouldEqual, dbName)
+		So(localDb.data.CreatedAt.UnixNano(), ShouldEqual, before.UnixNano())
+		So(localDb.data.LastSave.UnixNano(), ShouldEqual, -6795364578871345152)
 
-		Convey("It should add save it to the db", func() {
-			saveError := db.Save()
+		Convey("It should add save it to the localDb", func() {
+			saveError := localDb.Save()
 			So(saveError, ShouldBeNil)
-			So(db.data.CreatedAt.UnixNano(), ShouldEqual, before.UnixNano())
-			So(db.data.LastSave.UnixNano(), ShouldEqual, now.UnixNano())
+			So(localDb.data.CreatedAt.UnixNano(), ShouldEqual, before.UnixNano())
+			So(localDb.data.LastSave.UnixNano(), ShouldEqual, now.UnixNano())
 
 			Convey("and be able to read it back", func() {
 				db2 := Open(dbName, fs)
 
 				So(db2, ShouldNotBeNil)
 				So(db2.data.LastSave.UnixNano(), ShouldEqual, now.UnixNano())
-			})
 
-		})
+				Convey("close should also save the localDb", func() {
+					next := now.AddDate(0, 0, 1)
+					getNow = func() time.Time { return next }
 
-	})
+					db2.Close()
 
-}
-
-func TestAddFolder(t *testing.T) {
-
-	Convey("Given a folder", t, func() {
-
-		Convey("It should add save it to the db", func() {
-
-			Convey("and be able to read it back", func() {
-
+					db3 := Open(dbName, fs)
+					So(db3.data.LastSave.UnixNano(), ShouldEqual, next.UnixNano())
+				})
 			})
 
 		})
