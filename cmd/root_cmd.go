@@ -8,6 +8,9 @@ import (
 
 	"os"
 	"world-backup/api"
+
+	"github.com/spf13/afero"
+	"github.com/Sirupsen/logrus"
 )
 
 var rootCmd = cobra.Command{
@@ -34,6 +37,8 @@ func run(cmd *cobra.Command, args []string) {
 		log.Fatal("Failed to configure logging: " + err.Error())
 	}
 
+	startWatcher(logger)
+
 	server := api.NewAPI(logger, config)
 	server.SetUpRoutes()
 
@@ -42,4 +47,9 @@ func run(cmd *cobra.Command, args []string) {
 		logger.WithError(err).Error("Error while running server")
 		os.Exit(1)
 	}
+}
+
+func startWatcher(log *logrus.Entry) {
+	appFs := afero.NewOsFs()
+	log.Info(appFs.Name())
 }

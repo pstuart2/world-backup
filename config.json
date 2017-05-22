@@ -1,6 +1,6 @@
 {
   "port": 3030,
-  "staticRoot": "../client/dist/",
+  "staticRoot": "/media/paul/2488FFA988FF781E/Users/Paul/AppData/Roaming/.minecraft_1.8.9/saves",
   "path": "",
   "log": {
     "file": "",
