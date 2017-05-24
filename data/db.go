@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 
 	"github.com/spf13/afero"
+	"github.com/ventu-io/go-shortid"
 )
 
 var getNow = time.Now
+var getId = shortid.MustGenerate
 
 type dbData struct {
 	CreatedAt time.Time `json:"createdAt"`

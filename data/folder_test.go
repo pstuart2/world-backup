@@ -15,6 +15,10 @@ func TestAddFolder(t *testing.T) {
 	getNow = func() time.Time { return now }
 	defer func() { getNow = oldGetNow }()
 
+	oldGetId := getId
+	getId = func() string { return "TheCoolID" }
+	defer func() { getId = oldGetId }()
+
 	Convey("Given a folder", t, func() {
 
 		Convey("It should add it to the db and return it", func() {
@@ -23,11 +27,14 @@ func TestAddFolder(t *testing.T) {
 			So(len(db.data.Folders), ShouldEqual, 1)
 
 			So(f1, ShouldNotBeNil)
+			So(f1.Id, ShouldEqual, "TheCoolID")
 			So(f1.Path, ShouldEqual, "/some/cool/place")
 			So(f1.CreatedAt.UnixNano(), ShouldEqual, now.UnixNano())
 			So(f1.ModifiedAt.UnixNano(), ShouldEqual, now.UnixNano())
 
 			Convey("It should be able to add more", func() {
+				getId = func() string { return "TheCoolID2" }
+
 				f2 := db.AddFolder("another cool place")
 				So(f2.Path, ShouldEqual, "another cool place")
 				So(len(db.data.Folders), ShouldEqual, 2)
@@ -37,7 +44,9 @@ func TestAddFolder(t *testing.T) {
 					db2 := Open(db.name, fs)
 
 					So(len(db2.data.Folders), ShouldEqual, 2)
+					So(db2.data.Folders[0].Id, ShouldEqual, "TheCoolID")
 					So(db2.data.Folders[0].Path, ShouldEqual, "/some/cool/place")
+					So(db2.data.Folders[1].Id, ShouldEqual, "TheCoolID2")
 					So(db2.data.Folders[1].Path, ShouldEqual, "another cool place")
 
 				})

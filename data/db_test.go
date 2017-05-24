@@ -20,12 +20,10 @@ func TestMain(m *testing.M) {
 
 	fs = afero.NewOsFs()
 	db = Open(dbName, fs)
-	defer func() {
-		fs.Remove(dbName)
-	}()
 
 	code := m.Run()
 
+	fs.Remove(dbName)
 	os.Exit(code)
 }
 

@@ -5,6 +5,7 @@ import (
 )
 
 type Folder struct {
+	Id         string    `json:"id"`
 	Path       string    `json:"path"`
 	CreatedAt  time.Time `json:"createdAt"`
 	ModifiedAt time.Time `json:"modifiedAt"`
@@ -12,6 +13,7 @@ type Folder struct {
 
 func (db *Db) AddFolder(path string) *Folder {
 	f := Folder{
+		Id:         getId(),
 		Path:       path,
 		CreatedAt:  getNow(),
 		ModifiedAt: getNow(),
