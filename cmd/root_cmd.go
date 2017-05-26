@@ -3,14 +3,17 @@ package cmd
 import (
 	"log"
 	"world-backup/conf"
+	"world-backup/data"
 
+	"github.com/mholt/archiver"
 	"github.com/spf13/cobra"
 
 	"os"
 	"world-backup/api"
 
+	"world-backup/watcher"
+
 	"github.com/spf13/afero"
-	"github.com/Sirupsen/logrus"
 )
 
 var rootCmd = cobra.Command{
@@ -37,7 +40,12 @@ func run(cmd *cobra.Command, args []string) {
 		log.Fatal("Failed to configure logging: " + err.Error())
 	}
 
-	startWatcher(logger)
+	fs := afero.Afero{Fs: afero.NewOsFs()}
+	db := data.Open("data.json", fs)
+	db.Save()
+
+	w := watcher.NewWatcher(logger, config, fs, db, archiver.Zip)
+	w.Start()
 
 	server := api.NewAPI(logger, config)
 	server.SetUpRoutes()
@@ -47,9 +55,6 @@ func run(cmd *cobra.Command, args []string) {
 		logger.WithError(err).Error("Error while running server")
 		os.Exit(1)
 	}
-}
 
-func startWatcher(log *logrus.Entry) {
-	appFs := afero.NewOsFs()
-	log.Info(appFs.Name())
+	logger.Info("DONE!")
 }

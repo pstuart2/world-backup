@@ -8,7 +8,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestAddFolder(t *testing.T) {
+func TestFolder_AddFolder(t *testing.T) {
 	now := time.Now()
 
 	oldGetNow := getNow
@@ -56,4 +56,22 @@ func TestAddFolder(t *testing.T) {
 
 	})
 
+}
+
+func TestFolder_FolderByPath(t *testing.T) {
+	Convey("Given a list of folders", t, func() {
+		db.AddFolder("/some/cool1/place")
+		f2 := db.AddFolder("/some/cool2/place")
+		db.AddFolder("/some/cool3/place")
+		f4 := db.AddFolder("/some/cool4/place")
+		db.AddFolder("/some/cool5/place")
+
+		Convey("It should return the correct folder when asked", func() {
+			r1 := db.FolderByPath("/some/cool2/place")
+			r2 := db.FolderByPath("/some/cool4/place")
+
+			So(r1.Id, ShouldEqual, f2.Id)
+			So(r2.Id, ShouldEqual, f4.Id)
+		})
+	})
 }

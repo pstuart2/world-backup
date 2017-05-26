@@ -1,6 +1,7 @@
 {
   "port": 3030,
-  "staticRoot": "/media/paul/2488FFA988FF781E/Users/Paul/AppData/Roaming/.minecraft_1.8.9/saves",
+  "watchDir": "/home/paul/testWorlds/saves",
+  "backupDir": "/home/paul/testWorlds/backups",
   "path": "",
   "log": {
     "file": "",

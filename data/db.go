@@ -27,6 +27,9 @@ type Db struct {
 type IDb interface {
 	Save() error
 	Close()
+
+	Folders() []Folder
+	FolderByPath(path string) *Folder
 }
 
 func Open(name string, fs afero.Fs) *Db {
