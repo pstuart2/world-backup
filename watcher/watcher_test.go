@@ -55,7 +55,9 @@ func TestWatcher_Start(t *testing.T) {
 
 		wasWatched := false
 		oldWatch := watch
-		watch = func(w *Watcher) { wasWatched = true }
+		watch = func(w *Watcher, stop chan bool) {
+			wasWatched = true
+		}
 		defer func() { watch = oldWatch }()
 
 		Convey("It should create the folders in the db that do not exist", func() {
@@ -93,6 +95,35 @@ func TestWatcher_Start(t *testing.T) {
 			w.Start()
 
 			So(len(dbMock.Calls), ShouldEqual, 0)
+		})
+	})
+}
+
+func TestWatcher_Watch(t *testing.T) {
+	Convey("Given a watcher", t, func() {
+		config := conf.Config{
+			CheckIntervalSeconds: 1,
+		}
+		log := logrus.WithField("test", "watcher")
+		fs := afero.Afero{Fs: afero.NewMemMapFs()}
+		dbMock := new(IDbMock)
+		zipMock := new(IArchiverMock)
+
+		w := NewWatcher(log, &config, fs, dbMock, zipMock)
+
+		checkCount := 0
+		oldCheck := check
+		check = func(w *Watcher) { checkCount++ }
+		defer func() { check = oldCheck }()
+
+		Convey("It should watch until stopped", func() {
+			stopChannel := make(chan bool)
+
+			go watch(w, stopChannel)
+			<-time.After(time.Millisecond * 2200)
+			stopChannel <- true
+
+			So(checkCount, ShouldEqual, 2)
 		})
 	})
 }

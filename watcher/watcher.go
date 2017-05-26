@@ -65,18 +65,18 @@ func (w *Watcher) Start() {
 	// Run our check right at startup
 	check(w)
 
-	// Start the watcher routine
-	go watch(w)
+	stopChannel := make(chan bool)
+	go watch(w, stopChannel)
 }
 
-var watch = func(w *Watcher) {
+var watch = func(w *Watcher, stop chan bool) {
+	d, _ := time.ParseDuration(fmt.Sprintf("%ds", w.config.CheckIntervalSeconds))
 	shouldStop := false
 	for !shouldStop {
 		select {
-		//case shouldStop = <-ci.stop:
-		//	log.Infof("Quit message: %v", shouldStop)
-		//	break
-		case <-time.After(time.Second * 10):
+		case shouldStop = <-stop:
+			w.log.Infof("Quit message: %v", shouldStop)
+		case <-time.After(d):
 			w.log.Info("Checking!")
 			check(w)
 		}

@@ -9,11 +9,11 @@ import (
 
 // Config the application's configuration
 type Config struct {
-	Port      int64         `json:"port"`
-	WatchDirs []string      `json:"watchDirs"`
-	BackupDir string        `json:"backupDir"`
-	Path      string        `json:"path"`
-	LogConfig LoggingConfig `json:"log"`
+	Port                 int64         `json:"port"`
+	WatchDirs            []string      `json:"watchDirs"`
+	BackupDir            string        `json:"backupDir"`
+	CheckIntervalSeconds int           `json:"checkIntervalSeconds"`
+	LogConfig            LoggingConfig `json:"log"`
 }
 
 // LoadConfig loads the config from a file if specified, otherwise from the environment
