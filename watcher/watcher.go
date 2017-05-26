@@ -84,7 +84,13 @@ var watch = func(w *Watcher, stop chan bool) {
 }
 
 var check = func(w *Watcher) {
-	dirs, err := w.fs.ReadDir(w.config.WatchDirs[0])
+	for i := range w.config.WatchDirs {
+		checkOneDir(w, w.config.WatchDirs[i])
+	}
+}
+
+var checkOneDir = func(w *Watcher, dir string) {
+	dirs, err := w.fs.ReadDir(dir)
 	if err != nil {
 		w.log.Error(err)
 		return

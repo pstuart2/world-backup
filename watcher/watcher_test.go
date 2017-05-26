@@ -131,6 +131,36 @@ func TestWatcher_Watch(t *testing.T) {
 }
 
 func TestWatcher_Check(t *testing.T) {
+	Convey("Given a watcher to watch multiple directories", t, func() {
+		config := conf.Config{
+			WatchDirs: []string{"/home/paul", "/home/sydney", "/home/logan"},
+		}
+		log := logrus.WithField("test", "watcher")
+		fsMock := new(IFileSystemMock)
+		dbMock := new(IDbMock)
+		zipMock := new(IArchiverMock)
+
+		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+
+		dirs := []string{}
+		oldCheckOneDir := checkOneDir
+		checkOneDir = func(w *Watcher, dir string) {
+			dirs = append(dirs, dir)
+		}
+		defer func() { checkOneDir = oldCheckOneDir }()
+
+		Convey("It should call checkOneDir for each", func() {
+			check(w)
+
+			So(len(dirs), ShouldEqual, 3)
+			So(dirs[0], ShouldEqual, config.WatchDirs[0])
+			So(dirs[1], ShouldEqual, config.WatchDirs[1])
+			So(dirs[2], ShouldEqual, config.WatchDirs[2])
+		})
+	})
+}
+
+func TestWatcher_CheckOneDir(t *testing.T) {
 	Convey("Given a watcher and directories", t, func() {
 		config := conf.Config{
 			WatchDirs: []string{"/home/world"},
@@ -146,7 +176,7 @@ func TestWatcher_Check(t *testing.T) {
 		Convey("When there is an error reading the directory", func() {
 			fsMock.On("ReadDir", "/home/world").Return(nil, errors.New("No worky"))
 
-			check(w)
+			checkOneDir(w, config.WatchDirs[0])
 
 			Convey("It should not create any backups", func() {
 				fsMock.AssertExpectations(t)
@@ -176,7 +206,7 @@ func TestWatcher_Check(t *testing.T) {
 		Convey("When there are no sub directories", func() {
 			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{}, nil)
 
-			check(w)
+			checkOneDir(w, config.WatchDirs[0])
 
 			fsMock.AssertExpectations(t)
 
@@ -200,7 +230,7 @@ func TestWatcher_Check(t *testing.T) {
 
 			zipMock.On("Make", mock.Anything, mock.Anything).Times(2).Return(nil)
 
-			check(w)
+			checkOneDir(w, config.WatchDirs[0])
 
 			Convey("It should create the corresponding zip backups", func() {
 				fsMock.AssertExpectations(t)
@@ -229,7 +259,7 @@ func TestWatcher_Check(t *testing.T) {
 			zipMock.On("Make", mock.Anything, mock.Anything).Return(errors.New("Oops!"))
 
 			Convey("It should continue", func() {
-				check(w)
+				checkOneDir(w, config.WatchDirs[0])
 
 				fsMock.AssertExpectations(t)
 				zipMock.AssertExpectations(t)
