@@ -8,6 +8,8 @@ import (
 	"time"
 	"world-backup/data"
 
+	"os"
+
 	"github.com/Sirupsen/logrus"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/spf13/afero"
@@ -42,11 +44,11 @@ func TestWatcher_Start(t *testing.T) {
 			WatchDirs: []string{"/home/world", "/another/one"},
 		}
 		log := logrus.WithField("test", "watcher")
-		fs := afero.Afero{Fs: afero.NewMemMapFs()}
+		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
 		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fs, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
 
 		wasChecked := false
 		oldCheck := check
@@ -85,11 +87,11 @@ func TestWatcher_Start(t *testing.T) {
 	Convey("Given directories to watch", t, func() {
 		config := conf.Config{}
 		log := logrus.WithField("test", "watcher")
-		fs := afero.Afero{Fs: afero.NewMemMapFs()}
+		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
 		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fs, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
 
 		Convey("It should not do anything", func() {
 			w.Start()
@@ -105,11 +107,11 @@ func TestWatcher_Watch(t *testing.T) {
 			CheckIntervalSeconds: 1,
 		}
 		log := logrus.WithField("test", "watcher")
-		fs := afero.Afero{Fs: afero.NewMemMapFs()}
+		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
 		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fs, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
 
 		checkCount := 0
 		oldCheck := check
@@ -129,22 +131,26 @@ func TestWatcher_Watch(t *testing.T) {
 }
 
 func TestWatcher_Check(t *testing.T) {
-	Convey("Given a watcher and directories that do not exist", t, func() {
+	Convey("Given a watcher and directories", t, func() {
 		config := conf.Config{
 			WatchDirs: []string{"/home/world"},
 			BackupDir: "/home/backup",
 		}
 		log := logrus.WithField("test", "watcher")
-		fs := afero.Afero{Fs: afero.NewMemMapFs()}
+		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
 		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fs, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
 
-		Convey("When there are no sub directories", func() {
+		Convey("When there is an error reading the directory", func() {
+			fsMock.On("ReadDir", "/home/world").Return(nil, errors.New("No worky"))
+
 			check(w)
 
 			Convey("It should not create any backups", func() {
+				fsMock.AssertExpectations(t)
+
 				So(len(zipMock.Calls), ShouldEqual, 0)
 			})
 		})
@@ -161,17 +167,18 @@ func TestWatcher_Check(t *testing.T) {
 			BackupDir: "/home/backup",
 		}
 		log := logrus.WithField("test", "watcher")
-		fs := afero.Afero{Fs: afero.NewMemMapFs()}
+		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
 		zipMock := new(IArchiverMock)
 
-		fs.MkdirAll("/home/world", 0755)
-		fs.MkdirAll("/home/backup", 0755)
-
-		w := NewWatcher(log, &config, fs, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
 
 		Convey("When there are no sub directories", func() {
+			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{}, nil)
+
 			check(w)
+
+			fsMock.AssertExpectations(t)
 
 			Convey("It should not create any backups", func() {
 				So(len(zipMock.Calls), ShouldEqual, 0)
@@ -179,19 +186,24 @@ func TestWatcher_Check(t *testing.T) {
 		})
 
 		Convey("When there are directories", func() {
-			fs.MkdirAll("/home/world/World one", 0755)
-			f1Err := fs.WriteFile("/home/world/World one/f1.mc", []byte("file 1"), 0644)
-			So(f1Err, ShouldBeNil)
+			dir1 := new(FileInfoMock)
+			dir1.On("Name").Return("World one")
+			dir1.On("IsDir").Return(true)
+			dir1.On("ModTime").Return(now.Add(time.Second * -100))
 
-			fs.MkdirAll("/home/world/World two", 0755)
-			f2Err := fs.WriteFile("/home/world/World two/f2.mc", []byte("file 2"), 0644)
-			So(f2Err, ShouldBeNil)
+			dir2 := new(FileInfoMock)
+			dir2.On("Name").Return("World two")
+			dir2.On("IsDir").Return(true)
+			dir2.On("ModTime").Return(now.Add(time.Second * -100))
+
+			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{dir1, dir2}, nil)
 
 			zipMock.On("Make", mock.Anything, mock.Anything).Times(2).Return(nil)
 
 			check(w)
 
 			Convey("It should create the corresponding zip backups", func() {
+				fsMock.AssertExpectations(t)
 				zipMock.AssertExpectations(t)
 
 				c1 := zipMock.Calls[0]
@@ -207,15 +219,19 @@ func TestWatcher_Check(t *testing.T) {
 		})
 
 		Convey("When there is an error creating the zip", func() {
-			fs.MkdirAll("/home/world/World one", 0755)
-			f1Err := fs.WriteFile("/home/world/World one/f1.mc", []byte("file 1"), 0644)
-			So(f1Err, ShouldBeNil)
+			dir1 := new(FileInfoMock)
+			dir1.On("Name").Return("World one")
+			dir1.On("IsDir").Return(true)
+			dir1.On("ModTime").Return(now.Add(time.Second * -100))
+
+			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{dir1}, nil)
 
 			zipMock.On("Make", mock.Anything, mock.Anything).Return(errors.New("Oops!"))
 
 			Convey("It should continue", func() {
 				check(w)
 
+				fsMock.AssertExpectations(t)
 				zipMock.AssertExpectations(t)
 			})
 		})
