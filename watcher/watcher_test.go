@@ -142,20 +142,32 @@ func TestWatcher_Check(t *testing.T) {
 
 		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
 
-		dirs := []string{}
+		folders := []*data.Folder{}
 		oldCheckOneDir := checkOneDir
-		checkOneDir = func(w *Watcher, dir string) {
-			dirs = append(dirs, dir)
+		checkOneDir = func(w *Watcher, f *data.Folder) {
+			folders = append(folders, f)
 		}
 		defer func() { checkOneDir = oldCheckOneDir }()
 
-		Convey("It should call checkOneDir for each", func() {
-			check(w)
+		Convey("It should get the folder from the db", func() {
+			f1 := data.Folder{Id: "01", Path: w.config.WatchDirs[0]}
+			f2 := data.Folder{Id: "02", Path: w.config.WatchDirs[1]}
+			f3 := data.Folder{Id: "03", Path: w.config.WatchDirs[2]}
 
-			So(len(dirs), ShouldEqual, 3)
-			So(dirs[0], ShouldEqual, config.WatchDirs[0])
-			So(dirs[1], ShouldEqual, config.WatchDirs[1])
-			So(dirs[2], ShouldEqual, config.WatchDirs[2])
+			dbMock.On("FolderByPath", w.config.WatchDirs[0]).Return(&f1)
+			dbMock.On("FolderByPath", w.config.WatchDirs[1]).Return(&f2)
+			dbMock.On("FolderByPath", w.config.WatchDirs[2]).Return(&f3)
+
+			Convey("and call checkOneDir for each", func() {
+				check(w)
+
+				dbMock.AssertExpectations(t)
+
+				So(len(folders), ShouldEqual, 3)
+				So(folders[0].Id, ShouldEqual, f1.Id)
+				So(folders[1].Id, ShouldEqual, f2.Id)
+				So(folders[2].Id, ShouldEqual, f3.Id)
+			})
 		})
 	})
 }
@@ -163,7 +175,6 @@ func TestWatcher_Check(t *testing.T) {
 func TestWatcher_CheckOneDir(t *testing.T) {
 	Convey("Given a watcher and directories", t, func() {
 		config := conf.Config{
-			WatchDirs: []string{"/home/world"},
 			BackupDir: "/home/backup",
 		}
 		log := logrus.WithField("test", "watcher")
@@ -176,7 +187,8 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 		Convey("When there is an error reading the directory", func() {
 			fsMock.On("ReadDir", "/home/world").Return(nil, errors.New("No worky"))
 
-			checkOneDir(w, config.WatchDirs[0])
+			f := data.Folder{Path: "/home/world"}
+			checkOneDir(w, &f)
 
 			Convey("It should not create any backups", func() {
 				fsMock.AssertExpectations(t)
@@ -193,7 +205,6 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 		defer func() { getNow = oldGetNow }()
 
 		config := conf.Config{
-			WatchDirs: []string{"/home/world"},
 			BackupDir: "/home/backup",
 		}
 		log := logrus.WithField("test", "watcher")
@@ -206,7 +217,8 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 		Convey("When there are no sub directories", func() {
 			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{}, nil)
 
-			checkOneDir(w, config.WatchDirs[0])
+			f := data.Folder{Path: "/home/world"}
+			checkOneDir(w, &f)
 
 			fsMock.AssertExpectations(t)
 
@@ -230,7 +242,8 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 
 			zipMock.On("Make", mock.Anything, mock.Anything).Times(2).Return(nil)
 
-			checkOneDir(w, config.WatchDirs[0])
+			f := data.Folder{Path: "/home/world"}
+			checkOneDir(w, &f)
 
 			Convey("It should create the corresponding zip backups", func() {
 				fsMock.AssertExpectations(t)
@@ -259,7 +272,8 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 			zipMock.On("Make", mock.Anything, mock.Anything).Return(errors.New("Oops!"))
 
 			Convey("It should continue", func() {
-				checkOneDir(w, config.WatchDirs[0])
+				f := data.Folder{Path: "/home/world"}
+				checkOneDir(w, &f)
 
 				fsMock.AssertExpectations(t)
 				zipMock.AssertExpectations(t)

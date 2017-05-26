@@ -85,12 +85,13 @@ var watch = func(w *Watcher, stop chan bool) {
 
 var check = func(w *Watcher) {
 	for i := range w.config.WatchDirs {
-		checkOneDir(w, w.config.WatchDirs[i])
+		f := w.db.FolderByPath(w.config.WatchDirs[i])
+		checkOneDir(w, f)
 	}
 }
 
-var checkOneDir = func(w *Watcher, dir string) {
-	dirs, err := w.fs.ReadDir(dir)
+var checkOneDir = func(w *Watcher, f *data.Folder) {
+	dirs, err := w.fs.ReadDir(f.Path)
 	if err != nil {
 		w.log.Error(err)
 		return
@@ -102,7 +103,7 @@ var checkOneDir = func(w *Watcher, dir string) {
 	for k, v := range dirs {
 		w.log.Infof("%d - %s (isDir: %t) %d", k, v.Name(), v.IsDir(), v.ModTime().Unix())
 
-		world := fmt.Sprintf("%s/%s", w.config.WatchDirs[0], v.Name())
+		world := fmt.Sprintf("%s/%s", f.Path, v.Name())
 		zipName := fmt.Sprintf("%s/%s-%s.zip", w.config.BackupDir, v.Name(), t.Format("20060102T150405"))
 
 		if ferr := w.zip.Make(zipName, []string{world}); ferr != nil {
