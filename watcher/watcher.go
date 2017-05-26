@@ -44,25 +44,47 @@ func NewWatcher(log *logrus.Entry, config *conf.Config, fs IFileSystem, db data.
 }
 
 func (w *Watcher) Start() {
-	w.check()
+	if len(w.config.WatchDirs) == 0 {
+		return
+	}
 
-	go func() {
-		shouldStop := false
-		for !shouldStop {
-			select {
-			//case shouldStop = <-ci.stop:
-			//	log.Infof("Quit message: %v", shouldStop)
-			//	break
-			case <-time.After(time.Second * 10):
-				w.log.Info("Checking!")
-				w.check()
-			}
+	for i, d := range w.config.WatchDirs {
+		w.log.Infof("Checking tracking for dir (%d) [%s]", i, d)
+
+		f := w.db.FolderByPath(d)
+		if f == nil {
+			w.log.Infof("Creating tracking for [%s}", d)
+			f = w.db.AddFolder(d)
 		}
-	}()
+
+		w.log.Infof("Watching: %s: %s", f.Id, f.Path)
+	}
+
+	w.db.Save()
+
+	// Run our check right at startup
+	check(w)
+
+	// Start the watcher routine
+	go watch(w)
 }
 
-func (w *Watcher) check() {
-	dirs, err := w.fs.ReadDir(w.config.WatchDir)
+var watch = func(w *Watcher) {
+	shouldStop := false
+	for !shouldStop {
+		select {
+		//case shouldStop = <-ci.stop:
+		//	log.Infof("Quit message: %v", shouldStop)
+		//	break
+		case <-time.After(time.Second * 10):
+			w.log.Info("Checking!")
+			check(w)
+		}
+	}
+}
+
+var check = func(w *Watcher) {
+	dirs, err := w.fs.ReadDir(w.config.WatchDirs[0])
 	if err != nil {
 		w.log.Error(err)
 		return
@@ -74,7 +96,7 @@ func (w *Watcher) check() {
 	for k, v := range dirs {
 		w.log.Infof("%d - %s (isDir: %t) %d", k, v.Name(), v.IsDir(), v.ModTime().Unix())
 
-		world := fmt.Sprintf("%s/%s", w.config.WatchDir, v.Name())
+		world := fmt.Sprintf("%s/%s", w.config.WatchDirs[0], v.Name())
 		zipName := fmt.Sprintf("%s/%s-%s.zip", w.config.BackupDir, v.Name(), t.Format("20060102T150405"))
 
 		if ferr := w.zip.Make(zipName, []string{world}); ferr != nil {

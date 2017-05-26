@@ -1,6 +1,8 @@
 {
   "port": 3030,
-  "watchDir": "/home/paul/testWorlds/saves",
+  "watchDirs": [
+    "/home/paul/testWorlds/saves"
+  ],
   "backupDir": "/home/paul/testWorlds/backups",
   "path": "",
   "log": {

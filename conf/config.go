@@ -10,7 +10,7 @@ import (
 // Config the application's configuration
 type Config struct {
 	Port      int64         `json:"port"`
-	WatchDir  string        `json:"watchDir"`
+	WatchDirs []string      `json:"watchDirs"`
 	BackupDir string        `json:"backupDir"`
 	Path      string        `json:"path"`
 	LogConfig LoggingConfig `json:"log"`
@@ -18,7 +18,7 @@ type Config struct {
 
 // LoadConfig loads the config from a file if specified, otherwise from the environment
 func LoadConfig(cmd *cobra.Command) (*Config, error) {
-	viper.SetConfigType("json") // necessary in the event that we are using file-less config
+	viper.SetConfigType("json")
 
 	if err := viper.BindPFlags(cmd.Flags()); err != nil {
 		return nil, err
@@ -40,5 +40,5 @@ func LoadConfig(cmd *cobra.Command) (*Config, error) {
 		return nil, err
 	}
 
-	return populateConfig(config)
+	return config, nil
 }

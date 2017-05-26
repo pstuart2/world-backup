@@ -20,6 +20,11 @@ func (m *IDbMock) Close() {
 	m.Called()
 }
 
+func (m *IDbMock) AddFolder(path string) *data.Folder {
+	args := m.Called(path)
+	return args.Get(0).(*data.Folder)
+}
+
 func (m *IDbMock) Folders() []data.Folder {
 	args := m.Called()
 	return args.Get(0).([]data.Folder)
@@ -27,6 +32,10 @@ func (m *IDbMock) Folders() []data.Folder {
 
 func (m *IDbMock) FolderByPath(path string) *data.Folder {
 	args := m.Called(path)
+	if args.Get(0) == nil {
+		return nil
+	}
+
 	return args.Get(0).(*data.Folder)
 }
 

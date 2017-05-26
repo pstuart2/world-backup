@@ -28,6 +28,7 @@ type IDb interface {
 	Save() error
 	Close()
 
+	AddFolder(path string) *Folder
 	Folders() []Folder
 	FolderByPath(path string) *Folder
 }
