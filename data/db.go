@@ -30,7 +30,7 @@ type IDb interface {
 
 	AddFolder(path string) *Folder
 	Folders() []Folder
-	FolderByPath(path string) *Folder
+	GetFolderByPath(path string) *Folder
 }
 
 func Open(name string, fs afero.Fs) *Db {

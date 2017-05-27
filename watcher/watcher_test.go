@@ -66,8 +66,8 @@ func TestWatcher_Start(t *testing.T) {
 			f1 := data.Folder{Id: "SomeId01", Path: "/home/world"}
 			f2 := data.Folder{Id: "SomeId02", Path: "/another/one"}
 
-			dbMock.On("FolderByPath", "/home/world").Return(&f1)
-			dbMock.On("FolderByPath", "/another/one").Return(nil)
+			dbMock.On("GetFolderByPath", "/home/world").Return(&f1)
+			dbMock.On("GetFolderByPath", "/another/one").Return(nil)
 			dbMock.On("AddFolder", "/another/one").Return(&f2)
 			dbMock.On("Save").Return(nil)
 
@@ -132,6 +132,11 @@ func TestWatcher_Watch(t *testing.T) {
 
 func TestWatcher_Check(t *testing.T) {
 	Convey("Given a watcher to watch multiple directories", t, func() {
+		now := time.Now()
+		oldGetNow := getNow
+		getNow = func() time.Time { return now }
+		defer func() { getNow = oldGetNow }()
+
 		config := conf.Config{
 			WatchDirs: []string{"/home/paul", "/home/sydney", "/home/logan"},
 		}
@@ -154,9 +159,10 @@ func TestWatcher_Check(t *testing.T) {
 			f2 := data.Folder{Id: "02", Path: w.config.WatchDirs[1]}
 			f3 := data.Folder{Id: "03", Path: w.config.WatchDirs[2]}
 
-			dbMock.On("FolderByPath", w.config.WatchDirs[0]).Return(&f1)
-			dbMock.On("FolderByPath", w.config.WatchDirs[1]).Return(&f2)
-			dbMock.On("FolderByPath", w.config.WatchDirs[2]).Return(&f3)
+			dbMock.On("GetFolderByPath", w.config.WatchDirs[0]).Return(&f1)
+			dbMock.On("GetFolderByPath", w.config.WatchDirs[1]).Return(&f2)
+			dbMock.On("GetFolderByPath", w.config.WatchDirs[2]).Return(&f3)
+			dbMock.On("Save").Times(3).Return(nil)
 
 			Convey("and call checkOneDir for each", func() {
 				check(w)
@@ -167,6 +173,12 @@ func TestWatcher_Check(t *testing.T) {
 				So(folders[0].Id, ShouldEqual, f1.Id)
 				So(folders[1].Id, ShouldEqual, f2.Id)
 				So(folders[2].Id, ShouldEqual, f3.Id)
+
+				Convey("and update the LastRun on each folder", func() {
+					So(f1.LastRun.UnixNano(), ShouldEqual, now.UnixNano())
+					So(f2.LastRun.UnixNano(), ShouldEqual, now.UnixNano())
+					So(f3.LastRun.UnixNano(), ShouldEqual, now.UnixNano())
+				})
 			})
 		})
 	})
@@ -214,72 +226,180 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 
 		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
 
-		Convey("When there are no sub directories", func() {
+		hasChangedFilesCallCount := 0
+		oldHasChangedFiles := hasChangedFiles
+		defer func() { hasChangedFiles = oldHasChangedFiles }()
+		hasChangedFiles = func(log *logrus.Entry, fs IFileSystem, world *data.World) bool {
+			hasChangedFilesCallCount++
+			return (hasChangedFilesCallCount % 2) != 0
+		}
+
+		backupCreatedCallCount := 0
+		var backedUpWorld *data.World
+		oldCreateBackup := createBackup
+		defer func() { createBackup = oldCreateBackup }()
+		createBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
+			backupCreatedCallCount++
+			backedUpWorld = world
+		}
+
+		Convey("When there are no worlds", func() {
 			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{}, nil)
 
 			f := data.Folder{Path: "/home/world"}
+
 			checkOneDir(w, &f)
 
 			fsMock.AssertExpectations(t)
 
 			Convey("It should not create any backups", func() {
-				So(len(zipMock.Calls), ShouldEqual, 0)
+				So(hasChangedFilesCallCount, ShouldEqual, 0)
+				So(backupCreatedCallCount, ShouldEqual, 0)
 			})
 		})
 
-		Convey("When there are directories", func() {
-			dir1 := new(FileInfoMock)
-			dir1.On("Name").Return("World one")
-			dir1.On("IsDir").Return(true)
-			dir1.On("ModTime").Return(now.Add(time.Second * -100))
+		Convey("When there are worlds", func() {
+			wDir1 := new(FileInfoMock)
+			wDir1.On("Name").Return("World one")
+			wDir1.On("IsDir").Return(true)
+			wDir1.On("ModTime").Return(now.Add(time.Second * -100))
 
-			dir2 := new(FileInfoMock)
-			dir2.On("Name").Return("World two")
-			dir2.On("IsDir").Return(true)
-			dir2.On("ModTime").Return(now.Add(time.Second * -100))
+			wDir2 := new(FileInfoMock)
+			wDir2.On("Name").Return("World two")
+			wDir2.On("IsDir").Return(true)
+			wDir2.On("ModTime").Return(now.Add(time.Second * -100))
 
-			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{dir1, dir2}, nil)
-
-			zipMock.On("Make", mock.Anything, mock.Anything).Times(2).Return(nil)
+			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{wDir1, wDir2}, nil)
 
 			f := data.Folder{Path: "/home/world"}
+			world := f.AddWorld("World two")
+
 			checkOneDir(w, &f)
 
-			Convey("It should create the corresponding zip backups", func() {
+			Convey("It should create a backup for a changed world and not unchanged ones", func() {
 				fsMock.AssertExpectations(t)
-				zipMock.AssertExpectations(t)
 
-				c1 := zipMock.Calls[0]
-				So(c1.Arguments.Get(0), ShouldEqual, "/home/backup/World one-20170526T090325.zip")
-				So(len(c1.Arguments.Get(1).([]string)), ShouldEqual, 1)
-				So(c1.Arguments.Get(1).([]string)[0], ShouldEqual, "/home/world/World one")
-
-				c2 := zipMock.Calls[1]
-				So(c2.Arguments.Get(0), ShouldEqual, "/home/backup/World two-20170526T090325.zip")
-				So(len(c2.Arguments.Get(1).([]string)), ShouldEqual, 1)
-				So(c2.Arguments.Get(1).([]string)[0], ShouldEqual, "/home/world/World two")
-			})
-		})
-
-		Convey("When there is an error creating the zip", func() {
-			dir1 := new(FileInfoMock)
-			dir1.On("Name").Return("World one")
-			dir1.On("IsDir").Return(true)
-			dir1.On("ModTime").Return(now.Add(time.Second * -100))
-
-			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{dir1}, nil)
-
-			zipMock.On("Make", mock.Anything, mock.Anything).Return(errors.New("Oops!"))
-
-			Convey("It should continue", func() {
-				f := data.Folder{Path: "/home/world"}
-				checkOneDir(w, &f)
-
-				fsMock.AssertExpectations(t)
-				zipMock.AssertExpectations(t)
+				So(hasChangedFilesCallCount, ShouldEqual, 2)
+				So(backupCreatedCallCount, ShouldEqual, 1)
+				So(backedUpWorld.Id, ShouldNotBeEmpty)
+				So(backedUpWorld.Id, ShouldNotEqual, world.Id)
+				So(backedUpWorld.Name, ShouldEqual, "World one")
 			})
 		})
 
 	})
 
+}
+
+func TestWatcher_HasChangedFiles(t *testing.T) {
+	Convey("Given a watcher and a world", t, func() {
+		now := time.Now()
+
+		log := logrus.WithField("test", "watcher")
+		fsMock := new(IFileSystemMock)
+
+		world := data.World{
+			Name:     "w1",
+			FullPath: "/home/world/w1",
+			Backups: []data.Backup{
+				{CreatedAt: now.Add(time.Second * -50)},
+			},
+		}
+
+		f1 := new(FileInfoMock)
+		f1.On("Name").Return("file1.txt")
+		f1.On("IsDir").Return(false)
+		f1.On("ModTime").Return(now.Add(time.Second * -100))
+
+		f2 := new(FileInfoMock)
+		f2.On("Name").Return("file2.txt")
+		f2.On("IsDir").Return(false)
+
+		Convey("When we fail to get world files", func() {
+			fsMock.On("ReadDir", world.FullPath).Return([]os.FileInfo{}, errors.New("failed to read"))
+
+			Convey("Then it should return false", func() {
+				So(hasChangedFiles(log, fsMock, &world), ShouldBeFalse)
+				fsMock.AssertExpectations(t)
+			})
+		})
+
+		Convey("When we successfully get world files", func() {
+			fsMock.On("ReadDir", world.FullPath).Return([]os.FileInfo{f1, f2}, nil)
+
+			Convey("When there are no updated files since the last backup", func() {
+				f2.On("ModTime").Return(now.Add(time.Second * -100))
+
+				Convey("Then it should return false", func() {
+					So(hasChangedFiles(log, fsMock, &world), ShouldBeFalse)
+					fsMock.AssertExpectations(t)
+				})
+			})
+
+			Convey("When there is an updated file", func() {
+				f2.On("ModTime").Return(now)
+
+				Convey("Then it should return true", func() {
+					So(hasChangedFiles(log, fsMock, &world), ShouldBeTrue)
+					fsMock.AssertExpectations(t)
+				})
+			})
+		})
+	})
+}
+
+func TestWatcher_CreateBackup(t *testing.T) {
+	Convey("Given a watcher and a world to backup", t, func() {
+		now := time.Unix(1495807405, 0)
+		oldGetNow := getNow
+		getNow = func() time.Time { return now }
+		defer func() { getNow = oldGetNow }()
+
+		config := conf.Config{
+			BackupDir: "/back/up",
+		}
+		log := logrus.WithField("test", "watcher")
+		fsMock := new(IFileSystemMock)
+		dbMock := new(IDbMock)
+		zipMock := new(IArchiverMock)
+
+		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+
+		world := data.World{
+			Id:       "WID01",
+			Name:     "World One! For# Ever%Dude",
+			FullPath: "/home/world/wee",
+		}
+
+		Convey("When the backup succeeds", func() {
+			zipMock.On("Make", "/back/up/World_One_For_Ever_Dude-WID01-20170526T090325.zip", mock.Anything).Return(nil)
+
+			createBackup(w, log, &world)
+
+			zipMock.AssertExpectations(t)
+
+			Convey("Then it should add the backup to the world", func() {
+				So(len(zipMock.Calls), ShouldEqual, 1)
+				So(zipMock.Calls[0].Arguments[1].([]string)[0], ShouldEqual, "/home/world/wee")
+
+				So(len(world.Backups), ShouldEqual, 1)
+				So(world.Backups[0].Name, ShouldEqual, "World_One_For_Ever_Dude-WID01-20170526T090325.zip")
+			})
+		})
+
+		Convey("When the backup fails", func() {
+			zipMock.On("Make", "/back/up/World_One_For_Ever_Dude-WID01-20170526T090325.zip", mock.Anything).Return(errors.New("Didn't work!"))
+
+			createBackup(w, log, &world)
+
+			zipMock.AssertExpectations(t)
+
+			Convey("Then it should not add the backup to the world", func() {
+				So(len(zipMock.Calls), ShouldEqual, 1)
+				So(zipMock.Calls[0].Arguments[1].([]string)[0], ShouldEqual, "/home/world/wee")
+
+				So(len(world.Backups), ShouldEqual, 0)
+			})
+		})
+	})
 }

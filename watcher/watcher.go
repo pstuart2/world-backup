@@ -10,6 +10,8 @@ import (
 
 	"os"
 
+	"regexp"
+
 	"github.com/Sirupsen/logrus"
 )
 
@@ -51,7 +53,7 @@ func (w *Watcher) Start() {
 	for i, d := range w.config.WatchDirs {
 		w.log.Infof("Checking tracking for dir (%d) [%s]", i, d)
 
-		f := w.db.FolderByPath(d)
+		f := w.db.GetFolderByPath(d)
 		if f == nil {
 			w.log.Infof("Creating tracking for [%s}", d)
 			f = w.db.AddFolder(d)
@@ -85,29 +87,75 @@ var watch = func(w *Watcher, stop chan bool) {
 
 var check = func(w *Watcher) {
 	for i := range w.config.WatchDirs {
-		f := w.db.FolderByPath(w.config.WatchDirs[i])
+		f := w.db.GetFolderByPath(w.config.WatchDirs[i])
 		checkOneDir(w, f)
+		f.LastRun = getNow()
+		w.db.Save()
 	}
 }
 
 var checkOneDir = func(w *Watcher, f *data.Folder) {
-	dirs, err := w.fs.ReadDir(f.Path)
+	log := w.log.WithField("folder", f.Id)
+
+	worldDirs, err := w.fs.ReadDir(f.Path)
 	if err != nil {
-		w.log.Error(err)
+		log.Error(err)
 		return
 	}
 
-	t := getNow()
-	w.log.Infof("Time: %d", t.Unix())
+	for k, v := range worldDirs {
+		log.Infof("%d - %s (isDir: %t) %d", k, v.Name(), v.IsDir(), v.ModTime().Unix())
 
-	for k, v := range dirs {
-		w.log.Infof("%d - %s (isDir: %t) %d", k, v.Name(), v.IsDir(), v.ModTime().Unix())
+		world := f.GetWorldByName(v.Name())
+		if world == nil {
+			world = f.AddWorld(v.Name())
+		}
 
-		world := fmt.Sprintf("%s/%s", f.Path, v.Name())
-		zipName := fmt.Sprintf("%s/%s-%s.zip", w.config.BackupDir, v.Name(), t.Format("20060102T150405"))
-
-		if ferr := w.zip.Make(zipName, []string{world}); ferr != nil {
-			w.log.Errorf("Failed to  create zip: %s, %v", zipName, ferr)
+		//worldLog := log.WithField("world", world.Id)
+		if hasChangedFiles(log, w.fs, world) {
+			createBackup(w, log, world)
 		}
 	}
+}
+
+var hasChangedFiles = func(log *logrus.Entry, fs IFileSystem, world *data.World) bool {
+	files, err := fs.ReadDir(world.FullPath)
+	if err != nil {
+		log.Errorf("Failed to check world [%s] for changes: %v", world.FullPath, err)
+		return false
+	}
+
+	lastBackupTime := world.LastBackupTime()
+	log.Infof("Last backup time: %d", lastBackupTime.Unix())
+
+	for i := range files {
+		file := files[i]
+		if lastBackupTime.Before(file.ModTime()) {
+			log.Infof("%s file was changed at %d", file.Name(), file.ModTime().Unix())
+			return true
+		}
+	}
+
+	return false
+}
+
+var createBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
+	t := getNow()
+
+	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
+	cleanWorldName := reg.ReplaceAllString(world.Name, "_")
+
+	zipName := fmt.Sprintf("%s-%s-%s.zip", cleanWorldName, world.Id, t.Format("20060102T150405"))
+	zipFullPath := fmt.Sprintf("%s/%s", w.config.BackupDir, zipName)
+
+	log.Infof("Creating backup file %s", zipName)
+	if err := w.zip.Make(zipFullPath, []string{world.FullPath}); err != nil {
+		log.Errorf("Failed to  create zip: %s, %v", zipName, err)
+		return
+	}
+
+	// TODO: This backup is not being taken into account and keeps
+	// TODO: resetting the backup time.
+	// TODO: Maybe an integration test
+	world.AddBackup(zipName)
 }

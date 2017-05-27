@@ -34,7 +34,7 @@ func (m *IDbMock) Folders() []data.Folder {
 	return args.Get(0).([]data.Folder)
 }
 
-func (m *IDbMock) FolderByPath(path string) *data.Folder {
+func (m *IDbMock) GetFolderByPath(path string) *data.Folder {
 	args := m.Called(path)
 	if args.Get(0) == nil {
 		return nil

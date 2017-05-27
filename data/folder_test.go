@@ -5,8 +5,70 @@ import (
 
 	"time"
 
+	"fmt"
+
+	"path"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+func TestFolder_AddWorld(t *testing.T) {
+	Convey("Given a folder", t, func() {
+		oldGetId := getId
+		idCounter := 0
+		getId = func() string { idCounter++; return fmt.Sprintf("WID:%d", idCounter) }
+		defer func() { getId = oldGetId }()
+
+		folder := Folder{Id: "C00L", Path: "/some/path/for"}
+
+		Convey("When we add a backup", func() {
+			w1 := folder.AddWorld("World 01 Spot")
+			w2 := folder.AddWorld("World 02 Spot")
+			w3 := folder.AddWorld("World 03 Spot")
+
+			So(w1.Id, ShouldEqual, "WID:1")
+			So(w1.FullPath, ShouldEqual, path.Join(folder.Path, w1.Name))
+			So(w2.Id, ShouldEqual, "WID:2")
+			So(w2.FullPath, ShouldEqual, path.Join(folder.Path, w2.Name))
+			So(w3.Id, ShouldEqual, "WID:3")
+			So(w3.FullPath, ShouldEqual, path.Join(folder.Path, w3.Name))
+
+			Convey("It should add the backup the end of backups", func() {
+				So(len(folder.Worlds), ShouldEqual, 3)
+				So(folder.Worlds[0].Id, ShouldEqual, w1.Id)
+				So(folder.Worlds[0].Name, ShouldEqual, "World 01 Spot")
+				So(folder.Worlds[1].Id, ShouldEqual, w2.Id)
+				So(folder.Worlds[1].Name, ShouldEqual, "World 02 Spot")
+				So(folder.Worlds[2].Id, ShouldEqual, w3.Id)
+				So(folder.Worlds[2].Name, ShouldEqual, "World 03 Spot")
+
+				So(folder.Worlds[2].CreatedAt.After(folder.Worlds[0].CreatedAt), ShouldBeTrue)
+			})
+
+		})
+
+	})
+}
+
+func TestFolder_GetWorldByName(t *testing.T) {
+	Convey("Given a folder with multiple worlds", t, func() {
+		folder := Folder{}
+		w1 := folder.AddWorld("World Numeral 01")
+		folder.AddWorld("World Numeral 02")
+		w3 := folder.AddWorld("World Numeral 03")
+		folder.AddWorld("World Numeral 04")
+
+		Convey("It should be able to find the worlds by name", func() {
+			r1 := folder.GetWorldByName("World Numeral 01")
+			r2 := folder.GetWorldByName("World Numeral 03")
+			r3 := folder.GetWorldByName("Not here")
+
+			So(r1.Id, ShouldEqual, w1.Id)
+			So(r2.Id, ShouldEqual, w3.Id)
+			So(r3, ShouldBeNil)
+		})
+	})
+}
 
 func TestFolder_AddFolder(t *testing.T) {
 	now := time.Now()
@@ -67,11 +129,13 @@ func TestFolder_FolderByPath(t *testing.T) {
 		db.AddFolder("/some/cool5/place")
 
 		Convey("It should return the correct folder when asked", func() {
-			r1 := db.FolderByPath("/some/cool2/place")
-			r2 := db.FolderByPath("/some/cool4/place")
+			r1 := db.GetFolderByPath("/some/cool2/place")
+			r2 := db.GetFolderByPath("/some/cool4/place")
+			r3 := db.GetFolderByPath("/some/not/here")
 
 			So(r1.Id, ShouldEqual, f2.Id)
 			So(r2.Id, ShouldEqual, f4.Id)
+			So(r3, ShouldBeNil)
 		})
 	})
 }
