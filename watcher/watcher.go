@@ -119,6 +119,9 @@ var checkOneDir = func(w *Watcher, f *data.Folder) {
 }
 
 var hasChangedFiles = func(log *logrus.Entry, fs IFileSystem, world *data.World) bool {
+	// TODO: Need to add threshold so we are not continually backing up a world running.
+	// TODO: Maybe if it is running, backup every 5 min (configurable) bot not every time
+	// TODO: we poll
 	files, err := fs.ReadDir(world.FullPath)
 	if err != nil {
 		log.Errorf("Failed to check world [%s] for changes: %v", world.FullPath, err)
@@ -146,6 +149,7 @@ var createBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
 	cleanWorldName := reg.ReplaceAllString(world.Name, "_")
 
 	zipName := fmt.Sprintf("%s-%s-%s.zip", cleanWorldName, world.Id, t.Format("20060102T150405"))
+	// TODO: Need to make OS env newline
 	zipFullPath := fmt.Sprintf("%s/%s", w.config.BackupDir, zipName)
 
 	log.Infof("Creating backup file %s", zipName)
