@@ -13,6 +13,7 @@ import (
 	"regexp"
 
 	"github.com/Sirupsen/logrus"
+	"errors"
 )
 
 var getNow = time.Now
@@ -33,6 +34,9 @@ type Watcher struct {
 	zip    IArchiver
 }
 
+var NoWatchPathError = errors.New("No paths to watch")
+var InvalidCheckInterval = errors.New("Invalid check interval")
+
 func NewWatcher(log *logrus.Entry, config *conf.Config, fs IFileSystem, db data.IDb, zip IArchiver) *Watcher {
 	w := Watcher{
 		config: config,
@@ -45,9 +49,14 @@ func NewWatcher(log *logrus.Entry, config *conf.Config, fs IFileSystem, db data.
 	return &w
 }
 
-func (w *Watcher) Start() {
+func (w *Watcher) Start() error {
 	if len(w.config.WatchDirs) == 0 {
-		return
+		return NoWatchPathError
+	}
+
+	checkInterval, dErr := time.ParseDuration(w.config.CheckInterval)
+	if dErr != nil {
+		return InvalidCheckInterval
 	}
 
 	for i, d := range w.config.WatchDirs {
@@ -68,11 +77,12 @@ func (w *Watcher) Start() {
 	check(w)
 
 	stopChannel := make(chan bool)
-	go watch(w, stopChannel)
+	go watch(w, stopChannel, checkInterval)
+
+	return nil
 }
 
-var watch = func(w *Watcher, stop chan bool) {
-	d, _ := time.ParseDuration(fmt.Sprintf("%ds", w.config.CheckIntervalSeconds))
+var watch = func(w *Watcher, stop chan bool, d time.Duration) {
 	shouldStop := false
 	for !shouldStop {
 		select {

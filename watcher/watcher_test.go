@@ -39,9 +39,10 @@ func TestWatcher_NewWatcher(t *testing.T) {
 }
 
 func TestWatcher_Start(t *testing.T) {
-	Convey("Given no directories to watch", t, func() {
+	Convey("Given directories to watch", t, func() {
 		config := conf.Config{
-			WatchDirs: []string{"/home/world", "/another/one"},
+			WatchDirs:     []string{"/home/world", "/another/one"},
+			CheckInterval: "1s",
 		}
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
@@ -57,7 +58,7 @@ func TestWatcher_Start(t *testing.T) {
 
 		wasWatched := false
 		oldWatch := watch
-		watch = func(w *Watcher, stop chan bool) {
+		watch = func(w *Watcher, stop chan bool, d time.Duration) {
 			wasWatched = true
 		}
 		defer func() { watch = oldWatch }()
@@ -71,8 +72,9 @@ func TestWatcher_Start(t *testing.T) {
 			dbMock.On("AddFolder", "/another/one").Return(&f2)
 			dbMock.On("Save").Return(nil)
 
-			w.Start()
+			err := w.Start()
 
+			So(err, ShouldBeNil)
 			dbMock.AssertExpectations(t)
 
 			Convey("and call check() and watch() at start", func() {
@@ -84,7 +86,7 @@ func TestWatcher_Start(t *testing.T) {
 		})
 	})
 
-	Convey("Given directories to watch", t, func() {
+	Convey("Given no directories to watch", t, func() {
 		config := conf.Config{}
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
@@ -93,9 +95,30 @@ func TestWatcher_Start(t *testing.T) {
 
 		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
 
-		Convey("It should not do anything", func() {
-			w.Start()
+		Convey("It should return NoWatchPathError", func() {
+			err := w.Start()
 
+			So(err, ShouldEqual, NoWatchPathError)
+			So(len(dbMock.Calls), ShouldEqual, 0)
+		})
+	})
+
+	Convey("Given an invalid watch interval", t, func() {
+		config := conf.Config{
+			WatchDirs:     []string{"/home/world", "/another/one"},
+			CheckInterval: "33",
+		}
+		log := logrus.WithField("test", "watcher")
+		fsMock := new(IFileSystemMock)
+		dbMock := new(IDbMock)
+		zipMock := new(IArchiverMock)
+
+		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+
+		Convey("It should return InvalidCheckInterval", func() {
+			err := w.Start()
+
+			So(err, ShouldEqual, InvalidCheckInterval)
 			So(len(dbMock.Calls), ShouldEqual, 0)
 		})
 	})
@@ -103,9 +126,7 @@ func TestWatcher_Start(t *testing.T) {
 
 func TestWatcher_Watch(t *testing.T) {
 	Convey("Given a watcher", t, func() {
-		config := conf.Config{
-			CheckIntervalSeconds: 1,
-		}
+		config := conf.Config{}
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
@@ -121,7 +142,7 @@ func TestWatcher_Watch(t *testing.T) {
 		Convey("It should watch until stopped", func() {
 			stopChannel := make(chan bool)
 
-			go watch(w, stopChannel)
+			go watch(w, stopChannel, time.Second*1)
 			<-time.After(time.Millisecond * 2200)
 			stopChannel <- true
 
