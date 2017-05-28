@@ -15,13 +15,13 @@ var getId = shortid.MustGenerate
 type dbData struct {
 	CreatedAt time.Time `json:"createdAt"`
 	LastSave  time.Time `json:"lastSave"`
-	Folders   []Folder  `json:"folders"`
+	Folders   []*Folder `json:"folders"`
 }
 
 type Db struct {
 	fs   afero.Afero
 	name string
-	data *dbData
+	data dbData
 }
 
 type IDb interface {
@@ -29,7 +29,7 @@ type IDb interface {
 	Close()
 
 	AddFolder(path string) *Folder
-	Folders() []Folder
+	Folders() []*Folder
 	GetFolderByPath(path string) *Folder
 }
 
@@ -40,7 +40,7 @@ func Open(name string, fs afero.Fs) *Db {
 	return &Db{
 		fs:   af,
 		name: name,
-		data: d,
+		data: *d,
 	}
 }
 

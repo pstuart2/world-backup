@@ -34,7 +34,7 @@ type Watcher struct {
 }
 
 func NewWatcher(log *logrus.Entry, config *conf.Config, fs IFileSystem, db data.IDb, zip IArchiver) *Watcher {
-	w := &Watcher{
+	w := Watcher{
 		config: config,
 		log:    log.WithField("component", "watcher"),
 		fs:     fs,
@@ -42,7 +42,7 @@ func NewWatcher(log *logrus.Entry, config *conf.Config, fs IFileSystem, db data.
 		zip:    zip,
 	}
 
-	return w
+	return &w
 }
 
 func (w *Watcher) Start() {
@@ -111,9 +111,9 @@ var checkOneDir = func(w *Watcher, f *data.Folder) {
 			world = f.AddWorld(v.Name())
 		}
 
-		//worldLog := log.WithField("world", world.Id)
-		if hasChangedFiles(log, w.fs, world) {
-			createBackup(w, log, world)
+		worldLog := log.WithField("world", world.Id)
+		if hasChangedFiles(worldLog, w.fs, world) {
+			createBackup(w, worldLog, world)
 		}
 	}
 }
@@ -154,8 +154,5 @@ var createBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
 		return
 	}
 
-	// TODO: This backup is not being taken into account and keeps
-	// TODO: resetting the backup time.
-	// TODO: Maybe an integration test
 	world.AddBackup(zipName)
 }

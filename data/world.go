@@ -13,7 +13,7 @@ type World struct {
 	CreatedAt time.Time `json:"createdAt"`
 	Name      string    `json:"name"`
 	FullPath  string    `json:"fullPath"`
-	Backups   []Backup  `json:"backups"`
+	Backups   []*Backup `json:"backups"`
 }
 
 func (world *World) AddBackup(name string) *Backup {
@@ -23,7 +23,7 @@ func (world *World) AddBackup(name string) *Backup {
 		Name:      name,
 	}
 
-	world.Backups = append(world.Backups, bu)
+	world.Backups = append(world.Backups, &bu)
 
 	return &bu
 }
