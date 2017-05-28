@@ -29,9 +29,9 @@ func (m *IDbMock) AddFolder(path string) *data.Folder {
 	return args.Get(0).(*data.Folder)
 }
 
-func (m *IDbMock) Folders() []data.Folder {
+func (m *IDbMock) Folders() []*data.Folder {
 	args := m.Called()
-	return args.Get(0).([]data.Folder)
+	return args.Get(0).([]*data.Folder)
 }
 
 func (m *IDbMock) GetFolderByPath(path string) *data.Folder {

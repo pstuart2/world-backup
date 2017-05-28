@@ -301,7 +301,7 @@ func TestWatcher_HasChangedFiles(t *testing.T) {
 		world := data.World{
 			Name:     "w1",
 			FullPath: "/home/world/w1",
-			Backups: []data.Backup{
+			Backups: []*data.Backup{
 				{CreatedAt: now.Add(time.Second * -50)},
 			},
 		}
