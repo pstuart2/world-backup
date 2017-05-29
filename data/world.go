@@ -36,3 +36,19 @@ func (world *World) LastBackupTime() time.Time {
 
 	return world.Backups[l-1].CreatedAt
 }
+
+func (world *World) RemoveBackup(id string) {
+	i := world.findBackupIndex(id)
+	world.Backups[i] = nil
+	world.Backups = append(world.Backups[:i], world.Backups[i+1:]...)
+}
+
+func (world *World) findBackupIndex(id string) int {
+	for i := range world.Backups {
+		if world.Backups[i].Id == id {
+			return i
+		}
+	}
+
+	return -1
+}

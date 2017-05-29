@@ -65,3 +65,25 @@ func TestWorld_LastBackup(t *testing.T) {
 		})
 	})
 }
+
+func TestWorld_RemoveBackup(t *testing.T) {
+	Convey("Given a world with backups", t, func() {
+		world := World{}
+		world.AddBackup("Backup 001")
+		world.AddBackup("Backup 002")
+		b3 := world.AddBackup("Backup 003")
+		world.AddBackup("Backup 004")
+		world.AddBackup("Backup 005")
+
+		idToRemove := b3.Id
+
+		Convey("When a backup is removed", func() {
+			world.RemoveBackup(idToRemove)
+
+			Convey("It should remove the backup and keep the others", func() {
+				So(len(world.Backups), ShouldEqual, 4)
+				So(world.findBackupIndex(idToRemove), ShouldEqual, -1)
+			})
+		})
+	})
+}

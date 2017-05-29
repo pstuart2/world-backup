@@ -264,6 +264,11 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 			backedUpWorld = world
 		}
 
+		oldCheckPurgeBackup := checkPurgeBackup
+		defer func() { checkPurgeBackup = oldCheckPurgeBackup }()
+		checkPurgeBackupCallCount := 0
+		checkPurgeBackup = func(w *Watcher, log *logrus.Entry, world *data.World) { checkPurgeBackupCallCount++ }
+
 		Convey("When there are no worlds", func() {
 			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{}, nil)
 
@@ -305,6 +310,10 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 				So(backedUpWorld.Id, ShouldNotBeEmpty)
 				So(backedUpWorld.Id, ShouldNotEqual, world.Id)
 				So(backedUpWorld.Name, ShouldEqual, "World one")
+
+				Convey("and call checkPurgeBackup", func() {
+					So(checkPurgeBackupCallCount, ShouldEqual, 1)
+				})
 			})
 		})
 
@@ -420,6 +429,94 @@ func TestWatcher_CreateBackup(t *testing.T) {
 				So(zipMock.Calls[0].Arguments[1].([]string)[0], ShouldEqual, "/home/world/wee")
 
 				So(len(world.Backups), ShouldEqual, 0)
+			})
+		})
+	})
+}
+
+func TestWatcher_CheckPurgeBackup(t *testing.T) {
+	Convey("Given a valid watcher and world", t, func() {
+		now := time.Now()
+		oldGetNow := getNow
+		getNow = func() time.Time { return now }
+		defer func() { getNow = oldGetNow }()
+
+		config := conf.Config{
+			BackupDir:     "/back/up",
+			CheckInterval: "5m",
+		}
+		log := logrus.WithField("test", "watcher")
+		fsMock := new(IFileSystemMock)
+		dbMock := new(IDbMock)
+		zipMock := new(IArchiverMock)
+
+		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+
+		world := data.World{
+			Id:       "WID01",
+			Name:     "w1",
+			FullPath: "/home/world/wee",
+		}
+
+		Convey("When there are no backups", func() {
+			Convey("It should do nothing", func() {
+				checkPurgeBackup(w, log, &world)
+			})
+		})
+
+		Convey("When there is only 1 backup", func() {
+			world.Backups = []*data.Backup{
+				{Id: "01", Name: "b1", CreatedAt: now},
+			}
+
+			Convey("It should do nothing", func() {
+				checkPurgeBackup(w, log, &world)
+			})
+		})
+
+		Convey("When there is more than 1 backup but they are older than our interval", func() {
+			world.Backups = []*data.Backup{
+				{Id: "01", Name: "b1", CreatedAt: now.Add(time.Minute * -20)},
+				{Id: "02", Name: "b2", CreatedAt: now.Add(time.Minute * -15)},
+				{Id: "03", Name: "b3", CreatedAt: now.Add(time.Minute * -10)},
+			}
+
+			Convey("It should do nothing", func() {
+				checkPurgeBackup(w, log, &world)
+
+				So(len(world.Backups), ShouldEqual, 3)
+			})
+		})
+
+		Convey("When there is more than 1 backup and it is within our interval", func() {
+			world.Backups = []*data.Backup{
+				{Id: "01", Name: "b1", CreatedAt: now.Add(time.Minute * -20)},
+				{Id: "02", Name: "b2", CreatedAt: now.Add(time.Minute * -15)},
+				{Id: "03", Name: "b3", CreatedAt: now.Add(time.Minute * -10)},
+				{Id: "04", Name: "b4", CreatedAt: now.Add(time.Minute * -5)},
+				{Id: "05", Name: "b5", CreatedAt: now},
+			}
+
+			Convey("And the removal succeeds", func() {
+				fsMock.On("Remove", "/back/up/b4").Return(nil)
+
+				Convey("It should purge the backup", func() {
+					checkPurgeBackup(w, log, &world)
+
+					So(len(world.Backups), ShouldEqual, 4)
+					fsMock.AssertExpectations(t)
+				})
+			})
+
+			Convey("And the removal failes", func() {
+				fsMock.On("Remove", "/back/up/b4").Return(errors.New("NO!"))
+
+				Convey("It should not purge the backup", func() {
+					checkPurgeBackup(w, log, &world)
+
+					So(len(world.Backups), ShouldEqual, 5)
+					fsMock.AssertExpectations(t)
+				})
 			})
 		})
 	})

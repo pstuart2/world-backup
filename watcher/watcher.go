@@ -12,8 +12,9 @@ import (
 
 	"regexp"
 
-	"github.com/Sirupsen/logrus"
 	"errors"
+
+	"github.com/Sirupsen/logrus"
 )
 
 var getNow = time.Now
@@ -24,6 +25,7 @@ type IArchiver interface {
 
 type IFileSystem interface {
 	ReadDir(dirname string) ([]os.FileInfo, error)
+	Remove(name string) error
 }
 
 type Watcher struct {
@@ -36,6 +38,7 @@ type Watcher struct {
 
 var NoWatchPathError = errors.New("No paths to watch")
 var InvalidCheckInterval = errors.New("Invalid check interval")
+var InvalidMinBackupAge = errors.New("Invalid min backup age")
 
 func NewWatcher(log *logrus.Entry, config *conf.Config, fs IFileSystem, db data.IDb, zip IArchiver) *Watcher {
 	w := Watcher{
@@ -54,8 +57,8 @@ func (w *Watcher) Start() error {
 		return NoWatchPathError
 	}
 
-	checkInterval, dErr := time.ParseDuration(w.config.CheckInterval)
-	if dErr != nil {
+	checkInterval, ciError := time.ParseDuration(w.config.CheckInterval)
+	if ciError != nil {
 		return InvalidCheckInterval
 	}
 
@@ -97,7 +100,8 @@ var watch = func(w *Watcher, stop chan bool, d time.Duration) {
 
 var check = func(w *Watcher) {
 	for i := range w.config.WatchDirs {
-		f := w.db.GetFolderByPath(w.config.WatchDirs[i])
+		path := os.ExpandEnv(w.config.WatchDirs[i])
+		f := w.db.GetFolderByPath(path)
 		checkOneDir(w, f)
 		f.LastRun = getNow()
 		w.db.Save()
@@ -124,14 +128,12 @@ var checkOneDir = func(w *Watcher, f *data.Folder) {
 		worldLog := log.WithField("world", world.Id)
 		if hasChangedFiles(worldLog, w.fs, world) {
 			createBackup(w, worldLog, world)
+			checkPurgeBackup(w, worldLog, world)
 		}
 	}
 }
 
 var hasChangedFiles = func(log *logrus.Entry, fs IFileSystem, world *data.World) bool {
-	// TODO: Need to add threshold so we are not continually backing up a world running.
-	// TODO: Maybe if it is running, backup every 5 min (configurable) bot not every time
-	// TODO: we poll
 	files, err := fs.ReadDir(world.FullPath)
 	if err != nil {
 		log.Errorf("Failed to check world [%s] for changes: %v", world.FullPath, err)
@@ -169,4 +171,26 @@ var createBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
 	}
 
 	world.AddBackup(zipName)
+}
+
+var checkPurgeBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
+	if len(world.Backups) < 2 {
+		return
+	}
+
+	now := getNow()
+	previousBackup := world.Backups[len(world.Backups)-2]
+	checkInterval, _ := time.ParseDuration(w.config.CheckInterval)
+	checkIntervalWithBuffer := checkInterval + (time.Second * 2)
+
+	if previousBackup.CreatedAt.After(now.Add(-checkIntervalWithBuffer)) {
+		zipName := fmt.Sprintf("%s/%s", w.config.BackupDir, previousBackup.Name)
+		log.Infof("Removing previous backup (%s) %s", previousBackup.Id, zipName)
+		if err := w.fs.Remove(zipName); err != nil {
+			log.Errorf("Failed to remove previous backup (%s), err: %v", zipName, err)
+			return
+		}
+
+		world.RemoveBackup(previousBackup.Id)
+	}
 }

@@ -72,6 +72,11 @@ func (m *IFileSystemMock) ReadDir(dirname string) ([]os.FileInfo, error) {
 	return args.Get(0).([]os.FileInfo), args.Error(1)
 }
 
+func (m *IFileSystemMock) Remove(name string) error {
+	args := m.Called(name)
+	return args.Error(0)
+}
+
 type FileInfoMock struct {
 	mock.Mock
 }
