@@ -1,10 +1,10 @@
 {
   "port": 3030,
   "watchDirs": [
-    "/home/paul/testWorlds/saves"
+    "${APPDATA}\\.minecraft\\saves"
   ],
-  "backupDir": "/home/paul/testWorlds/backups",
-  "checkInterval": "20s",
+  "backupDir": "${USERPROFILE}\\Documents\\MCBackups",
+  "checkInterval": "1m",
   "log": {
     "file": "",
     "level": "debug"

@@ -15,6 +15,7 @@ import (
 	"errors"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/spf13/afero"
 )
 
 var getNow = time.Now
@@ -100,7 +101,7 @@ var watch = func(w *Watcher, stop chan bool, d time.Duration) {
 
 var check = func(w *Watcher) {
 	for i := range w.config.WatchDirs {
-		path := os.ExpandEnv(w.config.WatchDirs[i])
+		path := w.config.WatchDirs[i]
 		f := w.db.GetFolderByPath(path)
 		checkOneDir(w, f)
 		f.LastRun = getNow()
@@ -161,8 +162,7 @@ var createBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
 	cleanWorldName := reg.ReplaceAllString(world.Name, "_")
 
 	zipName := fmt.Sprintf("%s-%s-%s.zip", cleanWorldName, world.Id, t.Format("20060102T150405"))
-	// TODO: Need to make OS env newline
-	zipFullPath := fmt.Sprintf("%s/%s", w.config.BackupDir, zipName)
+	zipFullPath := fmt.Sprintf("%s%s%s", w.config.BackupDir, afero.FilePathSeparator, zipName)
 
 	log.Infof("Creating backup file %s", zipName)
 	if err := w.zip.Make(zipFullPath, []string{world.FullPath}); err != nil {
@@ -184,7 +184,7 @@ var checkPurgeBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
 	checkIntervalWithBuffer := checkInterval + (time.Second * 2)
 
 	if previousBackup.CreatedAt.After(now.Add(-checkIntervalWithBuffer)) {
-		zipName := fmt.Sprintf("%s/%s", w.config.BackupDir, previousBackup.Name)
+		zipName := fmt.Sprintf("%s%s%s", w.config.BackupDir, afero.FilePathSeparator, previousBackup.Name)
 		log.Infof("Removing previous backup (%s) %s", previousBackup.Id, zipName)
 		if err := w.fs.Remove(zipName); err != nil {
 			log.Errorf("Failed to remove previous backup (%s), err: %v", zipName, err)

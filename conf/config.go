@@ -40,5 +40,18 @@ func LoadConfig(cmd *cobra.Command) (*Config, error) {
 		return nil, err
 	}
 
-	return config, nil
+	return cleanConfig(config), nil
+}
+
+func cleanConfig(c *Config) *Config {
+	c.BackupDir = os.ExpandEnv(c.BackupDir)
+
+	var paths []string
+	for i := range c.WatchDirs {
+		paths = append(paths, os.ExpandEnv(c.WatchDirs[i]))
+	}
+
+	c.WatchDirs = paths
+
+	return c
 }
