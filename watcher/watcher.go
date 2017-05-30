@@ -14,6 +14,8 @@ import (
 
 	"errors"
 
+	"path"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/afero"
 )
@@ -128,7 +130,7 @@ var checkOneDir = func(w *Watcher, f *data.Folder) {
 
 		worldLog := log.WithField("world", world.Id)
 		if hasChangedFiles(worldLog, w.fs, world) {
-			createBackup(w, worldLog, world)
+			createBackup(w, worldLog, f, world)
 			checkPurgeBackup(w, worldLog, world)
 		}
 	}
@@ -155,8 +157,15 @@ var hasChangedFiles = func(log *logrus.Entry, fs IFileSystem, world *data.World)
 	return false
 }
 
-var createBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
+var createBackup = func(w *Watcher, log *logrus.Entry, f *data.Folder, world *data.World) {
 	t := getNow()
+
+	currentDir, dErr := os.Getwd()
+	if dErr != nil {
+		log.Fatalf("Failed to change workind dir: %v", dErr)
+	}
+	defer func() { os.Chdir(currentDir) }()
+	os.Chdir(f.Path)
 
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 	cleanWorldName := reg.ReplaceAllString(world.Name, "_")
@@ -165,7 +174,8 @@ var createBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
 	zipFullPath := fmt.Sprintf("%s%s%s", w.config.BackupDir, afero.FilePathSeparator, zipName)
 
 	log.Infof("Creating backup file %s", zipName)
-	if err := w.zip.Make(zipFullPath, []string{world.FullPath}); err != nil {
+	//if err := w.zip.Make(zipFullPath, []string{path.Join("./", world.Name)}); err != nil {
+	if err := zipit(path.Join("./", world.Name), zipFullPath); err != nil {
 		log.Errorf("Failed to  create zip: %s, %v", zipName, err)
 		return
 	}
