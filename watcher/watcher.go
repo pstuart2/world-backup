@@ -14,8 +14,6 @@ import (
 
 	"errors"
 
-	"path"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/afero"
 )
@@ -172,7 +170,7 @@ var createBackup = func(w *Watcher, log *logrus.Entry, f *data.Folder, world *da
 	zipFullPath := fmt.Sprintf("%s%s%s", w.config.BackupDir, afero.FilePathSeparator, zipName)
 
 	log.Infof("Creating backup file %s", zipName)
-	if err := w.fs.Zip(path.Join(fmt.Sprintf(".%s", afero.FilePathSeparator), world.Name), zipFullPath); err != nil {
+	if err := w.fs.Zip(world.Name, zipFullPath); err != nil {
 		log.Errorf("Failed to  create zip: %s, %v", zipName, err)
 		return
 	}
