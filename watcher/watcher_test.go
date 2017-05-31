@@ -10,10 +10,13 @@ import (
 
 	"os"
 
+	"fmt"
+
+	"path"
+
 	"github.com/Sirupsen/logrus"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/spf13/afero"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestWatcher_NewWatcher(t *testing.T) {
@@ -21,17 +24,16 @@ func TestWatcher_NewWatcher(t *testing.T) {
 	Convey("Given the correct input", t, func() {
 		config := conf.Config{}
 		log := logrus.WithField("test", "watcher")
-		fs := afero.Afero{Fs: afero.NewMemMapFs()}
+		fs := new(IFileSystemMock)
 		dbMock := new(IDbMock)
-		zipMock := new(IArchiverMock)
 
 		Convey("It should return a new watcher", func() {
-			w := NewWatcher(log, &config, fs, dbMock, zipMock)
+			w := NewWatcher(log, &config, fs, dbMock)
 
 			So(w, ShouldNotBeNil)
 			So(w.config, ShouldEqual, &config)
 			So(w.db, ShouldEqual, dbMock)
-			So(w.zip, ShouldEqual, zipMock)
+			So(w.fs, ShouldEqual, fs)
 		})
 
 	})
@@ -47,9 +49,8 @@ func TestWatcher_Start(t *testing.T) {
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
-		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock)
 
 		wasChecked := false
 		oldCheck := check
@@ -91,9 +92,8 @@ func TestWatcher_Start(t *testing.T) {
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
-		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock)
 
 		Convey("It should return NoWatchPathError", func() {
 			err := w.Start()
@@ -111,9 +111,8 @@ func TestWatcher_Start(t *testing.T) {
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
-		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock)
 
 		Convey("It should return InvalidCheckInterval", func() {
 			err := w.Start()
@@ -130,9 +129,8 @@ func TestWatcher_Watch(t *testing.T) {
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
-		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock)
 
 		checkCount := 0
 		oldCheck := check
@@ -164,9 +162,8 @@ func TestWatcher_Check(t *testing.T) {
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
-		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock)
 
 		folders := []*data.Folder{}
 		oldCheckOneDir := checkOneDir
@@ -213,9 +210,16 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
-		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock)
+
+		hasChangedFilesCallCount := 0
+		oldHasChangedFiles := hasChangedFiles
+		defer func() { hasChangedFiles = oldHasChangedFiles }()
+		hasChangedFiles = func(log *logrus.Entry, fs IFileSystem, world *data.World) bool {
+			hasChangedFilesCallCount++
+			return false
+		}
 
 		Convey("When there is an error reading the directory", func() {
 			fsMock.On("ReadDir", "/home/world").Return(nil, errors.New("No worky"))
@@ -225,8 +229,7 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 
 			Convey("It should not create any backups", func() {
 				fsMock.AssertExpectations(t)
-
-				So(len(zipMock.Calls), ShouldEqual, 0)
+				So(hasChangedFilesCallCount, ShouldEqual, 0)
 			})
 		})
 	})
@@ -243,9 +246,8 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
-		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock)
 
 		hasChangedFilesCallCount := 0
 		oldHasChangedFiles := hasChangedFiles
@@ -259,7 +261,7 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 		var backedUpWorld *data.World
 		oldCreateBackup := createBackup
 		defer func() { createBackup = oldCreateBackup }()
-		createBackup = func(w *Watcher, log *logrus.Entry, world *data.World) {
+		createBackup = func(w *Watcher, log *logrus.Entry, f *data.Folder, world *data.World) {
 			backupCreatedCallCount++
 			backedUpWorld = world
 		}
@@ -391,9 +393,10 @@ func TestWatcher_CreateBackup(t *testing.T) {
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
-		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock)
+
+		folder := data.Folder{Path: "/home/saves"}
 
 		world := data.World{
 			Id:       "WID01",
@@ -401,33 +404,46 @@ func TestWatcher_CreateBackup(t *testing.T) {
 			FullPath: "/home/world/wee",
 		}
 
+		worldPath := path.Join(fmt.Sprintf(".%s", afero.FilePathSeparator), world.Name)
+
+		Convey("When we fail to get current working directory", func() {
+			fsMock.On("Getwd").Return("", errors.New("No!"))
+
+			createBackup(w, log, &folder, &world)
+
+			Convey("Then it should return", func() {
+				fsMock.AssertExpectations(t)
+			})
+		})
+
 		Convey("When the backup succeeds", func() {
-			zipMock.On("Make", "/back/up/World_One_For_Ever_Dude-WID01-20170526T090325.zip", mock.Anything).Return(nil)
 
-			createBackup(w, log, &world)
+			fsMock.On("Getwd").Return("/app/dir", nil)
+			fsMock.On("Chdir", "/home/saves").Return(nil)
+			fsMock.On("Chdir", "/app/dir").Return(nil)
+			fsMock.On("Zip", worldPath, "/back/up/World_One_For_Ever_Dude-WID01-20170526T090325.zip").Return(nil)
 
-			zipMock.AssertExpectations(t)
+			createBackup(w, log, &folder, &world)
+
+			fsMock.AssertExpectations(t)
 
 			Convey("Then it should add the backup to the world", func() {
-				So(len(zipMock.Calls), ShouldEqual, 1)
-				So(zipMock.Calls[0].Arguments[1].([]string)[0], ShouldEqual, "/home/world/wee")
-
 				So(len(world.Backups), ShouldEqual, 1)
 				So(world.Backups[0].Name, ShouldEqual, "World_One_For_Ever_Dude-WID01-20170526T090325.zip")
 			})
 		})
 
 		Convey("When the backup fails", func() {
-			zipMock.On("Make", "/back/up/World_One_For_Ever_Dude-WID01-20170526T090325.zip", mock.Anything).Return(errors.New("Didn't work!"))
+			fsMock.On("Getwd").Return("/app/dir", nil)
+			fsMock.On("Chdir", "/home/saves").Return(nil)
+			fsMock.On("Chdir", "/app/dir").Return(nil)
+			fsMock.On("Zip", worldPath, "/back/up/World_One_For_Ever_Dude-WID01-20170526T090325.zip").Return(errors.New("Didn't work!"))
 
-			createBackup(w, log, &world)
+			createBackup(w, log, &folder, &world)
 
-			zipMock.AssertExpectations(t)
+			fsMock.AssertExpectations(t)
 
 			Convey("Then it should not add the backup to the world", func() {
-				So(len(zipMock.Calls), ShouldEqual, 1)
-				So(zipMock.Calls[0].Arguments[1].([]string)[0], ShouldEqual, "/home/world/wee")
-
 				So(len(world.Backups), ShouldEqual, 0)
 			})
 		})
@@ -448,9 +464,8 @@ func TestWatcher_CheckPurgeBackup(t *testing.T) {
 		log := logrus.WithField("test", "watcher")
 		fsMock := new(IFileSystemMock)
 		dbMock := new(IDbMock)
-		zipMock := new(IArchiverMock)
 
-		w := NewWatcher(log, &config, fsMock, dbMock, zipMock)
+		w := NewWatcher(log, &config, fsMock, dbMock)
 
 		world := data.World{
 			Id:       "WID01",

@@ -5,13 +5,14 @@ import (
 	"world-backup/conf"
 	"world-backup/data"
 
-	"github.com/mholt/archiver"
 	"github.com/spf13/cobra"
 
 	"os"
 	"world-backup/api"
 
 	"world-backup/watcher"
+
+	"world-backup/fs"
 
 	"github.com/spf13/afero"
 )
@@ -40,11 +41,14 @@ func run(cmd *cobra.Command, args []string) {
 		log.Fatal("Failed to configure logging: " + err.Error())
 	}
 
-	fs := afero.Afero{Fs: afero.NewOsFs()}
-	db := data.Open("data.json", fs)
+	aferoFs := afero.Afero{Fs: afero.NewOsFs()}
+
+	db := data.Open("data.json", aferoFs)
 	db.Save()
 
-	w := watcher.NewWatcher(logger, config, fs, db, archiver.Zip)
+	fileSystem := fs.NewFs(aferoFs)
+
+	w := watcher.NewWatcher(logger, config, fileSystem, db)
 	w.Start()
 
 	server := api.NewAPI(logger, config)

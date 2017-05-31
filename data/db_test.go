@@ -13,17 +13,17 @@ import (
 )
 
 var db *Db
-var fs afero.Fs
+var af afero.Afero
 
 func TestMain(m *testing.M) {
 	dbName := "test_" + shortid.MustGenerate() + ".json"
 
-	fs = afero.NewOsFs()
-	db = Open(dbName, fs)
+	af = afero.Afero{Fs: afero.NewOsFs()}
+	db = Open(dbName, af)
 
 	code := m.Run()
 
-	fs.Remove(dbName)
+	af.Remove(dbName)
 	os.Exit(code)
 }
 
@@ -39,7 +39,7 @@ func TestOpen(t *testing.T) {
 
 		dbName := "somd.json"
 
-		fs := afero.NewOsFs()
+		fs := afero.Afero{Fs: afero.NewOsFs()}
 		localDb := Open(dbName, fs)
 
 		defer func() {

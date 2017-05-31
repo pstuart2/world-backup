@@ -33,8 +33,7 @@ type IDb interface {
 	GetFolderByPath(path string) *Folder
 }
 
-func Open(name string, fs afero.Fs) *Db {
-	af := afero.Afero{Fs: fs}
+func Open(name string, af afero.Afero) *Db {
 	d, _ := getData(name, af)
 
 	return &Db{
@@ -44,14 +43,14 @@ func Open(name string, fs afero.Fs) *Db {
 	}
 }
 
-func getData(name string, fs afero.Afero) (*dbData, error) {
-	exists, err := fs.Exists(name)
+func getData(name string, af afero.Afero) (*dbData, error) {
+	exists, err := af.Exists(name)
 	if err != nil {
 		return nil, err
 	}
 
 	if exists {
-		return getDataFromFile(name, fs)
+		return getDataFromFile(name, af)
 	}
 
 	d := dbData{
@@ -61,8 +60,8 @@ func getData(name string, fs afero.Afero) (*dbData, error) {
 	return &d, nil
 }
 
-func getDataFromFile(name string, fs afero.Afero) (*dbData, error) {
-	file, e := fs.ReadFile(name)
+func getDataFromFile(name string, af afero.Afero) (*dbData, error) {
+	file, e := af.ReadFile(name)
 	if e != nil {
 		return nil, e
 	}
