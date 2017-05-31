@@ -103,7 +103,7 @@ func TestFolder_AddFolder(t *testing.T) {
 
 				Convey("and be able to read it back", func() {
 					db.Save()
-					db2 := Open(db.name, af)
+					db2, _ := Open(db.name, af)
 
 					So(len(db2.data.Folders), ShouldEqual, 2)
 					So(db2.data.Folders[0].Id, ShouldEqual, "TheCoolID")

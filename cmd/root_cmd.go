@@ -43,7 +43,10 @@ func run(cmd *cobra.Command, args []string) {
 
 	aferoFs := afero.Afero{Fs: afero.NewOsFs()}
 
-	db := data.Open("data.json", aferoFs)
+	db, dbErr := data.Open("data.json", aferoFs)
+	if dbErr != nil {
+		log.Fatal("Failed to open the db: " + dbErr.Error())
+	}
 	db.Save()
 
 	fileSystem := fs.NewFs(aferoFs)

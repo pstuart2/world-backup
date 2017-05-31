@@ -5,7 +5,8 @@ import (
 
 	"encoding/json"
 
-	"github.com/spf13/afero"
+	"os"
+
 	"github.com/ventu-io/go-shortid"
 )
 
@@ -19,9 +20,15 @@ type dbData struct {
 }
 
 type Db struct {
-	fs   afero.Afero
+	fs   IDbFileSystem
 	name string
 	data dbData
+}
+
+type IDbFileSystem interface {
+	Exists(path string) (bool, error)
+	ReadFile(filename string) ([]byte, error)
+	WriteFile(filename string, data []byte, perm os.FileMode) error
 }
 
 type IDb interface {
@@ -33,17 +40,20 @@ type IDb interface {
 	GetFolderByPath(path string) *Folder
 }
 
-func Open(name string, af afero.Afero) *Db {
-	d, _ := getData(name, af)
+func Open(name string, af IDbFileSystem) (*Db, error) {
+	d, err := getData(name, af)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Db{
 		fs:   af,
 		name: name,
 		data: *d,
-	}
+	}, nil
 }
 
-func getData(name string, af afero.Afero) (*dbData, error) {
+func getData(name string, af IDbFileSystem) (*dbData, error) {
 	exists, err := af.Exists(name)
 	if err != nil {
 		return nil, err
@@ -60,7 +70,7 @@ func getData(name string, af afero.Afero) (*dbData, error) {
 	return &d, nil
 }
 
-func getDataFromFile(name string, af afero.Afero) (*dbData, error) {
+func getDataFromFile(name string, af IDbFileSystem) (*dbData, error) {
 	file, e := af.ReadFile(name)
 	if e != nil {
 		return nil, e
