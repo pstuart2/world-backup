@@ -45,18 +45,6 @@ func (m *IDbMock) GetFolderByPath(path string) *data.Folder {
 
 //endregion
 
-//region IArchiver
-type IArchiverMock struct {
-	mock.Mock
-}
-
-func (m *IArchiverMock) Make(zipPath string, filePaths []string) error {
-	args := m.Called(zipPath, filePaths)
-	return args.Error(0)
-}
-
-//endregion
-
 //region IFileSystem
 type IFileSystemMock struct {
 	mock.Mock
@@ -72,10 +60,27 @@ func (m *IFileSystemMock) ReadDir(dirname string) ([]os.FileInfo, error) {
 	return args.Get(0).([]os.FileInfo), args.Error(1)
 }
 
+func (m *IFileSystemMock) Chdir(dir string) error {
+	args := m.Called(dir)
+	return args.Error(0)
+}
+
+func (m *IFileSystemMock) Getwd() (dir string, err error) {
+	args := m.Called()
+	return args.String(0), args.Error(1)
+}
+
+
 func (m *IFileSystemMock) Remove(name string) error {
 	args := m.Called(name)
 	return args.Error(0)
 }
+
+func (m *IFileSystemMock) Zip(source, target string) error {
+	args := m.Called(source, target)
+	return args.Error(0)
+}
+
 
 type FileInfoMock struct {
 	mock.Mock

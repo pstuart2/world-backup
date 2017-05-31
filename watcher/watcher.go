@@ -22,13 +22,12 @@ import (
 
 var getNow = time.Now
 
-type IArchiver interface {
-	Make(zipPath string, filePaths []string) error
-}
-
 type IFileSystem interface {
+	Chdir(dir string) error
+	Getwd() (dir string, err error)
 	ReadDir(dirname string) ([]os.FileInfo, error)
 	Remove(name string) error
+	Zip(source, target string) error
 }
 
 type Watcher struct {
@@ -36,20 +35,18 @@ type Watcher struct {
 	config *conf.Config
 	fs     IFileSystem
 	db     data.IDb
-	zip    IArchiver
 }
 
 var NoWatchPathError = errors.New("No paths to watch")
 var InvalidCheckInterval = errors.New("Invalid check interval")
 var InvalidMinBackupAge = errors.New("Invalid min backup age")
 
-func NewWatcher(log *logrus.Entry, config *conf.Config, fs IFileSystem, db data.IDb, zip IArchiver) *Watcher {
+func NewWatcher(log *logrus.Entry, config *conf.Config, fs IFileSystem, db data.IDb) *Watcher {
 	w := Watcher{
 		config: config,
 		log:    log.WithField("component", "watcher"),
 		fs:     fs,
 		db:     db,
-		zip:    zip,
 	}
 
 	return &w
@@ -160,12 +157,13 @@ var hasChangedFiles = func(log *logrus.Entry, fs IFileSystem, world *data.World)
 var createBackup = func(w *Watcher, log *logrus.Entry, f *data.Folder, world *data.World) {
 	t := getNow()
 
-	currentDir, dErr := os.Getwd()
+	currentDir, dErr := w.fs.Getwd()
 	if dErr != nil {
-		log.Fatalf("Failed to change workind dir: %v", dErr)
+		log.Errorf("Failed to change workind dir: %v", dErr)
+		return
 	}
-	defer func() { os.Chdir(currentDir) }()
-	os.Chdir(f.Path)
+	defer func() { w.fs.Chdir(currentDir) }()
+	w.fs.Chdir(f.Path)
 
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 	cleanWorldName := reg.ReplaceAllString(world.Name, "_")
@@ -174,8 +172,7 @@ var createBackup = func(w *Watcher, log *logrus.Entry, f *data.Folder, world *da
 	zipFullPath := fmt.Sprintf("%s%s%s", w.config.BackupDir, afero.FilePathSeparator, zipName)
 
 	log.Infof("Creating backup file %s", zipName)
-	//if err := w.zip.Make(zipFullPath, []string{path.Join("./", world.Name)}); err != nil {
-	if err := zipit(path.Join("./", world.Name), zipFullPath); err != nil {
+	if err := w.fs.Zip(path.Join(fmt.Sprintf(".%s", afero.FilePathSeparator), world.Name), zipFullPath); err != nil {
 		log.Errorf("Failed to  create zip: %s, %v", zipName, err)
 		return
 	}

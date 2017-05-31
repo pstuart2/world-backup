@@ -7,27 +7,30 @@ import (
 
 	"os"
 
+	"errors"
+
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/mock"
 	"github.com/ventu-io/go-shortid"
 )
 
 var db *Db
-var fs afero.Fs
+var af afero.Afero
 
 func TestMain(m *testing.M) {
 	dbName := "test_" + shortid.MustGenerate() + ".json"
 
-	fs = afero.NewOsFs()
-	db = Open(dbName, fs)
+	af = afero.Afero{Fs: afero.NewOsFs()}
+	db, _ = Open(dbName, af)
 
 	code := m.Run()
 
-	fs.Remove(dbName)
+	af.Remove(dbName)
 	os.Exit(code)
 }
 
-func TestOpen(t *testing.T) {
+func TestOpenAndSave(t *testing.T) {
 
 	Convey("Given a name and filesystem", t, func() {
 		now := time.Now()
@@ -39,8 +42,8 @@ func TestOpen(t *testing.T) {
 
 		dbName := "somd.json"
 
-		fs := afero.NewOsFs()
-		localDb := Open(dbName, fs)
+		fs := afero.Afero{Fs: afero.NewOsFs()}
+		localDb, ldbErr := Open(dbName, fs)
 
 		defer func() {
 			fs.Remove(dbName)
@@ -48,6 +51,7 @@ func TestOpen(t *testing.T) {
 
 		getNow = func() time.Time { return now }
 
+		So(ldbErr, ShouldBeNil)
 		So(localDb, ShouldNotBeNil)
 		So(localDb.name, ShouldEqual, dbName)
 		So(localDb.data.CreatedAt.UnixNano(), ShouldEqual, before.UnixNano())
@@ -60,7 +64,7 @@ func TestOpen(t *testing.T) {
 			So(localDb.data.LastSave.UnixNano(), ShouldEqual, now.UnixNano())
 
 			Convey("and be able to read it back", func() {
-				db2 := Open(dbName, fs)
+				db2, _ := Open(dbName, fs)
 
 				So(db2, ShouldNotBeNil)
 				So(db2.data.LastSave.UnixNano(), ShouldEqual, now.UnixNano())
@@ -71,13 +75,66 @@ func TestOpen(t *testing.T) {
 
 					db2.Close()
 
-					db3 := Open(dbName, fs)
+					db3, _ := Open(dbName, fs)
 					So(db3.data.LastSave.UnixNano(), ShouldEqual, next.UnixNano())
 				})
 			})
 
 		})
 
+	})
+
+	Convey("Given there are some file system errors", t, func() {
+		fsMock := new(IDbFileSystemMock)
+
+		Convey("When the exists check errors", func() {
+			fsMock.On("Exists", "aName").Return(false, errors.New("What name?"))
+
+			_, err := Open("aName", fsMock)
+
+			Convey("It should return the error", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "What name?")
+			})
+		})
+
+		Convey("When we fail to read a file", func() {
+			fsMock.On("Exists", "aName").Return(true, nil)
+			fsMock.On("ReadFile", "aName").Return(nil, errors.New("failed to read"))
+
+			_, err := Open("aName", fsMock)
+
+			Convey("It should return the error", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "failed to read")
+			})
+		})
+
+		Convey("When the file is junk", func() {
+			fsMock.On("Exists", "aName").Return(true, nil)
+			fsMock.On("ReadFile", "aName").Return([]byte("Junk!"), nil)
+
+			_, err := Open("aName", fsMock)
+
+			Convey("It should return the error", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "invalid character 'J' looking for beginning of value")
+			})
+		})
+
+		Convey("When we fail to write the file", func() {
+			fsMock.On("WriteFile", "Wow fake", mock.Anything, mock.Anything).Return(errors.New("NOOO!"))
+			db := Db{
+				fs:   fsMock,
+				name: "Wow fake",
+			}
+			err := db.Save()
+
+			Convey("It should return the error", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "NOOO!")
+			})
+		})
 	})
 
 }

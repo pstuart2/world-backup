@@ -1,4 +1,4 @@
-memo = "c17b6b379b8b2b140a66d0bd822188dbbe37806ad67058a9f550fec847e9d86e"
+memo = "fa4753ec98e2c459f33d27a6d443b11e54f37ebd3acf2516abc92598670a9dc3"
 
 [[projects]]
   name = "github.com/Sirupsen/logrus"
@@ -17,12 +17,6 @@ memo = "c17b6b379b8b2b140a66d0bd822188dbbe37806ad67058a9f550fec847e9d86e"
   packages = ["."]
   revision = "d2709f9f1f31ebcda9651b03077758c1f3a0018c"
   version = "v3.0.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/dsnet/compress"
-  packages = [".","bzip2","bzip2/internal/sais","internal","internal/errors","internal/prefix"]
-  revision = "6e336cc7ed88357254ae4753d7964ff8c9d300c0"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -85,22 +79,10 @@ memo = "c17b6b379b8b2b140a66d0bd822188dbbe37806ad67058a9f550fec847e9d86e"
   version = "v0.0.2"
 
 [[projects]]
-  name = "github.com/mholt/archiver"
-  packages = ["."]
-  revision = "cdc68dd1f170b8dfc1a0d2231b5bb0967ed67006"
-  version = "v2.0"
-
-[[projects]]
   branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
   revision = "cc8532a8e9a55ea36402aa21efdf403a60d34096"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/nwaples/rardecode"
-  packages = ["."]
-  revision = "f22b7ef81a0afac9ce1447d37e5ab8e99fbd2f73"
 
 [[projects]]
   name = "github.com/pborman/uuid"
@@ -185,12 +167,6 @@ memo = "c17b6b379b8b2b140a66d0bd822188dbbe37806ad67058a9f550fec847e9d86e"
   packages = ["assert","mock"]
   revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
   version = "v1.1.4"
-
-[[projects]]
-  name = "github.com/ulikunitz/xz"
-  packages = [".","internal/hash","internal/xlog","lzma"]
-  revision = "788b87dddaa9905f9c12f778c60468f755aee935"
-  version = "v0.5.3"
 
 [[projects]]
   branch = "master"
