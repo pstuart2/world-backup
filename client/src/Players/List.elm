@@ -5,7 +5,7 @@ import Html.Attributes exposing (class, href)
 import Models exposing (Player)
 import Msgs exposing (Msg)
 import RemoteData exposing (WebData)
-import Routing exposing (playerPath)
+import Routing exposing (onLinkClick, playerPath)
 
 
 view : WebData (List Player) -> Html Msg
@@ -73,7 +73,7 @@ editBtn player =
         path =
             playerPath player.id
     in
-    a [ class "btn regular", href path ]
+    a [ class "btn regular", href path, onLinkClick (Msgs.ChangeLocation path) ]
         [ i [ class "fa fa-pencil mr1" ] []
         , text "Edit"
         ]

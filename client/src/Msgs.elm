@@ -6,5 +6,6 @@ import RemoteData exposing (WebData)
 
 
 type Msg
-    = OnFetchPlayers (WebData (List Player))
+    = ChangeLocation String
+    | OnFetchPlayers (WebData (List Player))
     | OnLocationChange Location
