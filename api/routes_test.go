@@ -15,7 +15,39 @@ import (
 )
 
 func TestSetUpRoutes(t *testing.T) {
+	Convey("Given api.SetUpRoutes", t, func() {
+		echoMock := new(EchoServerMock)
 
+		api := &API{
+			config: &conf.Config{Port: 7630},
+			Server: echoMock,
+			log:    logrus.WithField("test", "TestSetUpRoutes"),
+		}
+
+		groupMock := new(EchoGroupMock)
+
+		echoMock.On("Use", mock.Anything, mock.Anything).Times(3)
+		echoMock.On("GET", "*", mock.Anything, mock.Anything).Once()
+
+		echoMock.On("Group", "/api", mock.Anything, mock.Anything).Return(groupMock)
+
+		groupMock.On("GET", "/folders", mock.Anything, mock.Anything).Once()
+
+		routes := []echo.Route{
+			{Path: "/something", Method: "put"},
+		}
+		echoMock.On("Routes").Return(routes)
+
+		Convey("It should setup the Server Server properly", func() {
+			api.SetUpRoutes()
+
+			echoMock.AssertExpectations(t)
+
+			So(echoMock.Calls[3].Arguments.Get(0), ShouldEqual, "*")
+			So(echoMock.Calls[3].Arguments.Get(1), ShouldEqual, api.index)
+		})
+
+	})
 }
 
 func TestSetupRequest(t *testing.T) {

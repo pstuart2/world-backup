@@ -5,40 +5,22 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/pborman/uuid"
 )
 
 func (api *API) SetUpRoutes() {
 
-	// TODO: No server yet but will have one in the future.
-
 	api.Server.Use(api.setupRequest)
-	//api.Server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	//	AllowOrigins: []string{"localhost"},
-	//}))
+	api.Server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"localhost"},
+	}))
 
-	//api.Server.Use(middleware.Static(api.config.StaticRoot))
-	//api.Server.GET("*", api.index)
+	api.Server.Use(middleware.Static(api.config.StaticRoot))
+	api.Server.GET("*", api.index)
 
-	//api.Server.POST("/auth/signup", api.signUp)
-	//api.Server.POST("/auth/login", api.login)
-	//
-	//secureGroup := api.Server.Group("/api", requireClaims)
-	//secureGroup.GET("/authenticate", api.authenticate)
-	//secureGroup.GET("/clubTypes", api.clubTypes)
-	//secureGroup.GET("/awards/:clubTypeId", api.awards)
-	//
-	//secureGroup.POST("/clubs", api.createClub)
-	//secureGroup.GET("/clubs", api.clubs)
-	//
-	//secureGroup.POST("/books", api.createBook)
-	//secureGroup.PATCH("/books/:id", api.updateBook)
-	//secureGroup.GET("/books", api.books)
-	//secureGroup.GET("/books/:id", api.book)
-	//
-	//secureGroup.POST("/books/:bookId/chapters", api.addChapter)
-	//secureGroup.POST("/books/:bookId/chapters/:chapterId", api.updateChapter)
-	//secureGroup.DELETE("/books/:bookId/chapters/:chapterId", api.deleteChapter)
+	apiGroup := api.Server.Group("/api")
+	apiGroup.GET("/folders", api.getFolders)
 
 	routes := api.Server.Routes()
 	for i := 0; i < len(routes); i++ {
@@ -82,5 +64,7 @@ func (api *API) setupRequest(f echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func (api *API) index(ctx echo.Context) error {
-	return nil // ctx.File(api.config.StaticRoot + "index.html")
+	log := getLogger(ctx)
+	log.Infof("Returning index from: %s", api.config.StaticRoot)
+	return ctx.File(api.config.StaticRoot + "index.html")
 }

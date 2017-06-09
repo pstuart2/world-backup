@@ -14,6 +14,7 @@ type Config struct {
 	BackupDir     string        `json:"backupDir"`
 	CheckInterval string        `json:"checkInterval"`
 	LogConfig     LoggingConfig `json:"log"`
+	StaticRoot    string        `json:"staticRoot"`
 }
 
 // LoadConfig loads the config from a file if specified, otherwise from the environment
