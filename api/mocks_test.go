@@ -3,9 +3,23 @@ package api
 import (
 	"net/http"
 
+	"world-backup/data"
+
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/mock"
 )
+
+//region ApiDb Mock
+type ApiDbMock struct {
+	mock.Mock
+}
+
+func (m *ApiDbMock) Folders() []*data.Folder {
+	args := m.Called()
+	return args.Get(0).([]*data.Folder)
+}
+
+//endregion
 
 //region Echo Mock
 type EchoServerMock struct {
