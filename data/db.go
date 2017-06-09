@@ -31,15 +31,6 @@ type IDbFileSystem interface {
 	WriteFile(filename string, data []byte, perm os.FileMode) error
 }
 
-type IDb interface {
-	Save() error
-	Close()
-
-	AddFolder(path string) *Folder
-	Folders() []*Folder
-	GetFolderByPath(path string) *Folder
-}
-
 func Open(name string, af IDbFileSystem) (*Db, error) {
 	d, err := getData(name, af)
 	if err != nil {

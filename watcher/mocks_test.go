@@ -29,11 +29,6 @@ func (m *IDbMock) AddFolder(path string) *data.Folder {
 	return args.Get(0).(*data.Folder)
 }
 
-func (m *IDbMock) Folders() []*data.Folder {
-	args := m.Called()
-	return args.Get(0).([]*data.Folder)
-}
-
 func (m *IDbMock) GetFolderByPath(path string) *data.Folder {
 	args := m.Called(path)
 	if args.Get(0) == nil {
@@ -70,7 +65,6 @@ func (m *IFileSystemMock) Getwd() (dir string, err error) {
 	return args.String(0), args.Error(1)
 }
 
-
 func (m *IFileSystemMock) Remove(name string) error {
 	args := m.Called(name)
 	return args.Error(0)
@@ -80,7 +74,6 @@ func (m *IFileSystemMock) Zip(source, target string) error {
 	args := m.Called(source, target)
 	return args.Error(0)
 }
-
 
 type FileInfoMock struct {
 	mock.Mock

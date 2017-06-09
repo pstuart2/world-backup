@@ -28,18 +28,26 @@ type IFileSystem interface {
 	Zip(source, target string) error
 }
 
+type IDb interface {
+	Save() error
+	Close()
+
+	AddFolder(path string) *data.Folder
+	GetFolderByPath(path string) *data.Folder
+}
+
 type Watcher struct {
 	log    *logrus.Entry
 	config *conf.Config
 	fs     IFileSystem
-	db     data.IDb
+	db     IDb
 }
 
 var NoWatchPathError = errors.New("No paths to watch")
 var InvalidCheckInterval = errors.New("Invalid check interval")
 var InvalidMinBackupAge = errors.New("Invalid min backup age")
 
-func NewWatcher(log *logrus.Entry, config *conf.Config, fs IFileSystem, db data.IDb) *Watcher {
+func NewWatcher(log *logrus.Entry, config *conf.Config, fs IFileSystem, db IDb) *Watcher {
 	w := Watcher{
 		config: config,
 		log:    log.WithField("component", "watcher"),
