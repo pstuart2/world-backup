@@ -3,7 +3,7 @@ module Routing exposing (..)
 import Html exposing (Attribute)
 import Html.Events exposing (onWithOptions)
 import Json.Decode as Decode
-import Models exposing (PlayerId, Route(..))
+import Models exposing (FolderId, Route(..))
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 
@@ -11,9 +11,9 @@ import UrlParser exposing (..)
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
-        [ map PlayersRoute top
-        , map PlayerRoute (s "players" </> string)
-        , map PlayersRoute (s "players")
+        [ map FoldersRoute top
+        , map FolderRoute (s "folders" </> string)
+        , map FoldersRoute (s "folders")
         ]
 
 
@@ -38,11 +38,11 @@ parseLocation location =
             NotFoundRoute
 
 
-playersPath : String
-playersPath =
-    "/players"
+foldersPath : String
+foldersPath =
+    "/folders"
 
 
-playerPath : PlayerId -> String
-playerPath id =
-    "/players/" ++ id
+folderPath : FolderId -> String
+folderPath id =
+    "/folders/" ++ id

@@ -1,7 +1,6 @@
 module Update exposing (..)
 
-import Commands exposing (savePlayerCmd)
-import Models exposing (Model, Player)
+import Models exposing (Folder, Model)
 import Msgs exposing (Msg)
 import Navigation exposing (newUrl)
 import RemoteData
@@ -14,8 +13,8 @@ update msg model =
         Msgs.ChangeLocation path ->
             ( model, newUrl path )
 
-        Msgs.OnFetchPlayers response ->
-            ( { model | players = response }, Cmd.none )
+        Msgs.OnFetchFolders response ->
+            ( { model | folders = response }, Cmd.none )
 
         Msgs.OnLocationChange location ->
             let
@@ -24,33 +23,20 @@ update msg model =
             in
             ( { model | route = newRoute }, Cmd.none )
 
-        Msgs.ChangeLevel player howMuch ->
-            let
-                updatedPlayer =
-                    { player | level = player.level + howMuch }
-            in
-            ( model, savePlayerCmd updatedPlayer )
 
-        Msgs.OnPlayerSave (Ok player) ->
-            ( updatePlayer model player, Cmd.none )
-
-        Msgs.OnPlayerSave (Err error) ->
-            ( model, Cmd.none )
-
-
-updatePlayer : Model -> Player -> Model
-updatePlayer model updatedPlayer =
+updateFolder : Model -> Folder -> Model
+updateFolder model updatedFolder =
     let
-        pick currentPlayer =
-            if updatedPlayer.id == currentPlayer.id then
-                updatedPlayer
+        pick currentFolder =
+            if updatedFolder.id == currentFolder.id then
+                updatedFolder
             else
-                currentPlayer
+                currentFolder
 
-        updatePlayerList players =
-            List.map pick players
+        updateFolderList folders =
+            List.map pick folders
 
-        updatedPlayers =
-            RemoteData.map updatePlayerList model.players
+        updatedFolders =
+            RemoteData.map updateFolderList model.folders
     in
-    { model | players = updatedPlayers }
+    { model | folders = updatedFolders }

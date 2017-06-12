@@ -1,10 +1,10 @@
 module View exposing (..)
 
+import Folders.Edit
+import Folders.List
 import Html exposing (Html, div, text)
-import Models exposing (Model, PlayerId)
+import Models exposing (FolderId, Model)
 import Msgs exposing (Msg)
-import Players.Edit
-import Players.List
 import RemoteData
 
 
@@ -17,35 +17,35 @@ view model =
 page : Model -> Html Msg
 page model =
     case model.route of
-        Models.PlayersRoute ->
-            Players.List.view model.players
+        Models.FoldersRoute ->
+            Folders.List.view model.folders
 
-        Models.PlayerRoute id ->
-            playerEditPage model id
+        Models.FolderRoute id ->
+            folderEditPage model id
 
         Models.NotFoundRoute ->
             notFoundView
 
 
-playerEditPage : Model -> PlayerId -> Html Msg
-playerEditPage model playerId =
-    case model.players of
+folderEditPage : Model -> FolderId -> Html Msg
+folderEditPage model folderId =
+    case model.folders of
         RemoteData.NotAsked ->
             text ""
 
         RemoteData.Loading ->
             text "Loading ..."
 
-        RemoteData.Success players ->
+        RemoteData.Success folders ->
             let
-                maybePlayer =
-                    players
-                        |> List.filter (\player -> player.id == playerId)
+                maybeFolder =
+                    folders
+                        |> List.filter (\folder -> folder.id == folderId)
                         |> List.head
             in
-            case maybePlayer of
-                Just player ->
-                    Players.Edit.view player
+            case maybeFolder of
+                Just folder ->
+                    Folders.Edit.view folder
 
                 Nothing ->
                     notFoundView

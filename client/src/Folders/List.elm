@@ -1,14 +1,14 @@
-module Players.List exposing (..)
+module Folders.List exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
-import Models exposing (Player)
+import Models exposing (Folder)
 import Msgs exposing (Msg)
 import RemoteData exposing (WebData)
-import Routing exposing (onLinkClick, playerPath)
+import Routing exposing (folderPath, onLinkClick)
 
 
-view : WebData (List Player) -> Html Msg
+view : WebData (List Folder) -> Html Msg
 view response =
     div []
         [ nav
@@ -16,7 +16,7 @@ view response =
         ]
 
 
-maybeList : WebData (List Player) -> Html Msg
+maybeList : WebData (List Folder) -> Html Msg
 maybeList response =
     case response of
         RemoteData.NotAsked ->
@@ -25,8 +25,8 @@ maybeList response =
         RemoteData.Loading ->
             text "Loading..."
 
-        RemoteData.Success players ->
-            list players
+        RemoteData.Success folders ->
+            list folders
 
         RemoteData.Failure error ->
             text (toString error)
@@ -36,42 +36,38 @@ nav : Html Msg
 nav =
     div [ class "clearfix mb2 white bg-black" ]
         [ div [ class "left p2" ]
-            [ text "Players" ]
+            [ text "Folders" ]
         ]
 
 
-list : List Player -> Html Msg
-list players =
+list : List Folder -> Html Msg
+list folders =
     div [ class "p2" ]
         [ table []
             [ thead []
                 [ tr []
                     [ th [] [ text "Id" ]
-                    , th [] [ text "Name" ]
-                    , th [] [ text "Level" ]
-                    , th [] [ text "Actions" ]
+                    , th [] [ text "Path" ]
                     ]
                 ]
-            , tbody [] (List.map playerRow players)
+            , tbody [] (List.map folderRow folders)
             ]
         ]
 
 
-playerRow : Player -> Html Msg
-playerRow player =
+folderRow : Folder -> Html Msg
+folderRow folder =
     tr []
-        [ td [] [ text player.id ]
-        , td [] [ text player.name ]
-        , td [] [ text (toString player.level) ]
-        , td [] [ editBtn player ]
+        [ td [] [ text folder.id ]
+        , td [] [ text folder.path ]
         ]
 
 
-editBtn : Player -> Html.Html Msg
-editBtn player =
+editBtn : Folder -> Html.Html Msg
+editBtn folder =
     let
         path =
-            playerPath player.id
+            folderPath folder.id
     in
     a [ class "btn regular", href path, onLinkClick (Msgs.ChangeLocation path) ]
         [ i [ class "fa fa-pencil mr1" ] []

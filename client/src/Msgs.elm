@@ -1,14 +1,11 @@
 module Msgs exposing (..)
 
-import Http
-import Models exposing (Player)
+import Models exposing (Folder)
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 
 
 type Msg
     = ChangeLocation String
-    | OnFetchPlayers (WebData (List Player))
+    | OnFetchFolders (WebData (List Folder))
     | OnLocationChange Location
-    | ChangeLevel Player Int
-    | OnPlayerSave (Result Http.Error Player)

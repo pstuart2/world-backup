@@ -1,70 +1,88 @@
 module Commands exposing (..)
 
 import Http
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder, andThen, fail, string, succeed)
 import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode as Encode
-import Models exposing (Player, PlayerId)
+import Models exposing (Folder, FolderId, Options)
 import Msgs exposing (Msg)
 import RemoteData
+import Time.DateTime as DateTime exposing (DateTime)
 
 
-fetchPlayers : Cmd Msg
-fetchPlayers =
-    Http.get fetchPlayersUrl playersDecoder
+fetchFolders : Cmd Msg
+fetchFolders =
+    Http.get fetchFoldersUrl foldersDecoder
         |> RemoteData.sendRequest
-        |> Cmd.map Msgs.OnFetchPlayers
+        |> Cmd.map Msgs.OnFetchFolders
 
 
-fetchPlayersUrl : String
-fetchPlayersUrl =
-    "http://localhost:4000/players"
+fetchFoldersUrl : String
+fetchFoldersUrl =
+    "/api/folders"
 
 
-playersDecoder : Decode.Decoder (List Player)
-playersDecoder =
-    Decode.list playerDecoder
+dateTimeDecoder : Decoder DateTime
+dateTimeDecoder =
+    let
+        convert : String -> Decoder DateTime
+        convert raw =
+            case DateTime.fromISO8601 raw of
+                Ok date ->
+                    succeed date
+
+                Err error ->
+                    fail error
+    in
+    string |> andThen convert
 
 
-playerDecoder : Decode.Decoder Player
-playerDecoder =
-    decode Player
+foldersDecoder : Decode.Decoder (List Folder)
+foldersDecoder =
+    Decode.list folderDecoder
+
+
+folderDecoder : Decode.Decoder Folder
+folderDecoder =
+    decode Folder
         |> required "id" Decode.string
         |> required "name" Decode.string
-        |> required "level" Decode.int
+        |> required "modifiedat" dateTimeDecoder
+        |> required "lastRun" dateTimeDecoder
 
 
-savePlayerUrl : PlayerId -> String
-savePlayerUrl playerId =
-    "http://localhost:4000/players/" ++ playerId
+saveFolderUrl : FolderId -> String
+saveFolderUrl folderId =
+    "/api/folders/" ++ folderId
 
 
-savePlayerRequest : Player -> Http.Request Player
-savePlayerRequest player =
+saveFolderRequest : Folder -> Http.Request Folder
+saveFolderRequest folder =
     Http.request
-        { body = playerEncoder player |> Http.jsonBody
-        , expect = Http.expectJson playerDecoder
+        { body = folderEncoder folder |> Http.jsonBody
+        , expect = Http.expectJson folderDecoder
         , headers = []
         , method = "PATCH"
         , timeout = Nothing
-        , url = savePlayerUrl player.id
+        , url = saveFolderUrl folder.id
         , withCredentials = False
         }
 
 
-savePlayerCmd : Player -> Cmd Msg
-savePlayerCmd player =
-    savePlayerRequest player
-        |> Http.send Msgs.OnPlayerSave
+
+--
+-- saveFolderCmd : Folder -> Cmd Msg
+-- saveFolderCmd folder =
+--     saveFolderRequest folder
+--         |> Http.send Msgs.OnFolderSave
 
 
-playerEncoder : Player -> Encode.Value
-playerEncoder player =
+folderEncoder : Folder -> Encode.Value
+folderEncoder folder =
     let
         attributes =
-            [ ( "id", Encode.string player.id )
-            , ( "name", Encode.string player.name )
-            , ( "level", Encode.int player.level )
+            [ ( "id", Encode.string folder.id )
+            , ( "path", Encode.string folder.path )
             ]
     in
     Encode.object attributes
