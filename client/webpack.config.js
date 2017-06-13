@@ -14,7 +14,7 @@ function getSettings() {
   let settings = {};
   const isProd = process.env.NODE_ENV === 'production';
 
-  settings.baseUrl = isProd ? '' : 'http://localhost:3030';
+    settings.apiUrl = isProd ? '/api' : 'http://localhost:3030/api';
 
   return settings;
 }

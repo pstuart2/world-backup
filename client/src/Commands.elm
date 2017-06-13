@@ -4,22 +4,22 @@ import Http
 import Json.Decode as Decode exposing (Decoder, andThen, fail, string, succeed)
 import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode as Encode
-import Models exposing (Folder, FolderId, Options)
+import Models exposing (Flags, Folder, FolderId)
 import Msgs exposing (Msg)
 import RemoteData
 import Time.DateTime as DateTime exposing (DateTime)
 
 
-fetchFolders : Cmd Msg
-fetchFolders =
-    Http.get fetchFoldersUrl foldersDecoder
+fetchFolders : String -> Cmd Msg
+fetchFolders baseApiUrl =
+    Http.get (fetchFoldersUrl baseApiUrl) foldersDecoder
         |> RemoteData.sendRequest
         |> Cmd.map Msgs.OnFetchFolders
 
 
-fetchFoldersUrl : String
-fetchFoldersUrl =
-    "/api/folders"
+fetchFoldersUrl : String -> String
+fetchFoldersUrl baseApiUrl =
+    baseApiUrl ++ "/folders"
 
 
 dateTimeDecoder : Decoder DateTime
@@ -46,8 +46,8 @@ folderDecoder : Decode.Decoder Folder
 folderDecoder =
     decode Folder
         |> required "id" Decode.string
-        |> required "name" Decode.string
-        |> required "modifiedat" dateTimeDecoder
+        |> required "path" Decode.string
+        |> required "modifiedAt" dateTimeDecoder
         |> required "lastRun" dateTimeDecoder
 
 

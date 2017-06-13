@@ -10,21 +10,21 @@ type Route
     | NotFoundRoute
 
 
-type alias Options =
-    { baseUrl : String
+type alias Flags =
+    { apiUrl : String
     }
 
 
 type alias Model =
-    { options : Options
+    { flags : Flags
     , folders : WebData (List Folder)
     , route : Route
     }
 
 
-initialModel : Options -> Route -> Model
+initialModel : Flags -> Route -> Model
 initialModel flags route =
-    { options = flags
+    { flags = flags
     , folders = RemoteData.Loading
     , route = route
     }

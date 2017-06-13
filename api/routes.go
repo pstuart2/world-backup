@@ -13,7 +13,7 @@ func (api *API) SetUpRoutes() {
 
 	api.Server.Use(api.setupRequest)
 	api.Server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"localhost"},
+		AllowOrigins: []string{"*"},
 	}))
 
 	api.Server.Use(middleware.Static(api.config.StaticRoot))
