@@ -5,14 +5,12 @@ import Html.Attributes exposing (class, href)
 import Models exposing (Folder)
 import Msgs exposing (Msg)
 import RemoteData exposing (WebData)
-import Routing exposing (folderPath, onLinkClick)
 
 
 view : WebData (List Folder) -> Html Msg
 view response =
     div []
-        [ nav
-        , maybeList response
+        [ maybeList response
         ]
 
 
@@ -32,44 +30,30 @@ maybeList response =
             text (toString error)
 
 
-nav : Html Msg
-nav =
-    div [ class "clearfix mb2 white bg-black" ]
-        [ div [ class "left p2" ]
-            [ text "Folders" ]
-        ]
-
-
 list : List Folder -> Html Msg
 list folders =
-    div [ class "p2" ]
-        [ table []
-            [ thead []
-                [ tr []
-                    [ th [] [ text "Id" ]
-                    , th [] [ text "Path" ]
-                    ]
-                ]
-            , tbody [] (List.map folderRow folders)
-            ]
+    div []
+        [ headerRow
+        , folderBody folders
         ]
+
+
+headerRow : Html Msg
+headerRow =
+    div [ class "mdl-grid" ]
+        [ div [ class "mdl-cell mdl-cell--2-col" ] [ text "Id" ]
+        , div [ class "mdl-cell mdl-cell--10-col" ] [ text "Path" ]
+        ]
+
+
+folderBody : List Folder -> Html Msg
+folderBody folders =
+    div [] (List.map folderRow folders)
 
 
 folderRow : Folder -> Html Msg
 folderRow folder =
-    tr []
-        [ td [] [ text folder.id ]
-        , td [] [ text folder.path ]
-        ]
-
-
-editBtn : Folder -> Html.Html Msg
-editBtn folder =
-    let
-        path =
-            folderPath folder.id
-    in
-    a [ class "btn regular", href path, onLinkClick (Msgs.ChangeLocation path) ]
-        [ i [ class "fa fa-pencil mr1" ] []
-        , text "Edit"
+    div [ class "mdl-grid" ]
+        [ div [ class "mdl-cell mdl-cell--2-col" ] [ text folder.id ]
+        , div [ class "mdl-cell mdl-cell--10-col" ] [ text folder.path ]
         ]
