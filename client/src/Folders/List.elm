@@ -32,7 +32,7 @@ maybeList response =
 
 list : List Folder -> Html Msg
 list folders =
-    div []
+    div [ class "grid-outer" ]
         [ headerRow
         , folderBody folders
         ]
@@ -40,7 +40,7 @@ list folders =
 
 headerRow : Html Msg
 headerRow =
-    div [ class "mdl-grid" ]
+    div [ class "mdl-grid headers" ]
         [ div [ class "mdl-cell mdl-cell--2-col" ] [ text "Id" ]
         , div [ class "mdl-cell mdl-cell--10-col" ] [ text "Path" ]
         ]
@@ -48,7 +48,7 @@ headerRow =
 
 folderBody : List Folder -> Html Msg
 folderBody folders =
-    div [] (List.map folderRow folders)
+    div [ class "grid-body" ] (List.map folderRow folders)
 
 
 folderRow : Folder -> Html Msg

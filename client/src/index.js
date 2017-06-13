@@ -1,6 +1,7 @@
 'use strict';
 
 require('font-awesome/css/font-awesome.css');
+require('../styles/main.scss');
 
 const Elm = require('./Main.elm');
 const mountNode = document.getElementById('main');

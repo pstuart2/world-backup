@@ -46,6 +46,7 @@ const config = function(env) {
           use: [
             'style-loader',
             'css-loader',
+              'sass-loader',
           ]
         },
         {
@@ -75,7 +76,7 @@ const config = function(env) {
 
 
   };
-}
+};
 
 module.exports = function(env) {
   if (!env)
