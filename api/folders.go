@@ -11,10 +11,11 @@ import (
 )
 
 type FolderListItem struct {
-	Id         string    `json:"id"`
-	ModifiedAt time.Time `json:"modifiedAt"`
-	Path       string    `json:"path"`
-	LastRun    time.Time `json:"lastRun"`
+	Id             string    `json:"id"`
+	ModifiedAt     time.Time `json:"modifiedAt"`
+	Path           string    `json:"path"`
+	LastRun        time.Time `json:"lastRun"`
+	NumberOfWorlds int       `json:"numberOfWorlds"`
 }
 
 func (api *API) getFolders(ctx echo.Context) error {
@@ -31,9 +32,10 @@ func (api *API) getFolders(ctx echo.Context) error {
 
 func folderToListItem(f *data.Folder) FolderListItem {
 	return FolderListItem{
-		Id:         f.Id,
-		ModifiedAt: f.ModifiedAt,
-		Path:       f.Path,
-		LastRun:    f.LastRun,
+		Id:             f.Id,
+		ModifiedAt:     f.ModifiedAt,
+		Path:           f.Path,
+		LastRun:        f.LastRun,
+		NumberOfWorlds: len(f.Worlds),
 	}
 }

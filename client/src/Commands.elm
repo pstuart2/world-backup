@@ -49,6 +49,7 @@ folderDecoder =
         |> required "path" Decode.string
         |> required "modifiedAt" dateTimeDecoder
         |> required "lastRun" dateTimeDecoder
+        |> required "numberOfWorlds" Decode.int
 
 
 saveFolderUrl : FolderId -> String

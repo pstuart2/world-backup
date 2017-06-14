@@ -1,6 +1,15 @@
-div.mdl-grid.headers {
-  div.mdl-cell {
-    font-weight: bolder;
-    font-size: x-large;
+$gridHeaderRowSeparatorColor: #2C3F49;
+$gridRowSeparatorColor: lighten($gridHeaderRowSeparatorColor, 50%);
+
+div.mdl-grid {
+  border-bottom: solid 1px $gridRowSeparatorColor;
+
+  &.headers {
+    border-bottom: solid 1px $gridHeaderRowSeparatorColor;
+
+    .mdl-cell {
+      font-weight: bolder;
+      font-size: x-large;
+    }
   }
 }

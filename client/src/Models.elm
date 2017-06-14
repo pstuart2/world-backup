@@ -38,4 +38,5 @@ type alias Folder =
     , path : String
     , modifiedAt : DateTime
     , lastRun : DateTime
+    , numberOfWorlds : Int
     }

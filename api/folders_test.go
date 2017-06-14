@@ -31,16 +31,20 @@ func TestAPI_Folders(t *testing.T) {
 		}
 
 		Convey("When the call to the BooksList succeeds", func() {
+			w1 := data.World{Id: "w1"}
+			w2 := data.World{Id: "w2"}
+			w3 := data.World{Id: "w3"}
+
 			f1 := data.Folder{Id: "f-001", Path: "/this/be/h", ModifiedAt: time.Now(), LastRun: time.Now()}
-			f2 := data.Folder{Id: "f-002", Path: "/this/be/he", ModifiedAt: time.Now(), LastRun: time.Now()}
-			f3 := data.Folder{Id: "f-003", Path: "/this/be/her", ModifiedAt: time.Now(), LastRun: time.Now()}
+			f2 := data.Folder{Id: "f-002", Path: "/this/be/he", ModifiedAt: time.Now(), LastRun: time.Now(), Worlds: []*data.World{&w1}}
+			f3 := data.Folder{Id: "f-003", Path: "/this/be/her", ModifiedAt: time.Now(), LastRun: time.Now(), Worlds: []*data.World{&w2, &w3}}
 
 			folders := []*data.Folder{&f1, &f2, &f3}
 
 			expectedItems := []FolderListItem{
-				{Id: f1.Id, ModifiedAt: f1.ModifiedAt, Path: f1.Path, LastRun: f1.LastRun},
-				{Id: f2.Id, ModifiedAt: f2.ModifiedAt, Path: f2.Path, LastRun: f2.LastRun},
-				{Id: f3.Id, ModifiedAt: f3.ModifiedAt, Path: f3.Path, LastRun: f3.LastRun},
+				{Id: f1.Id, ModifiedAt: f1.ModifiedAt, Path: f1.Path, LastRun: f1.LastRun, NumberOfWorlds: 0},
+				{Id: f2.Id, ModifiedAt: f2.ModifiedAt, Path: f2.Path, LastRun: f2.LastRun, NumberOfWorlds: 1},
+				{Id: f3.Id, ModifiedAt: f3.ModifiedAt, Path: f3.Path, LastRun: f3.LastRun, NumberOfWorlds: 2},
 			}
 
 			mockDb.On("Folders").Return(folders)

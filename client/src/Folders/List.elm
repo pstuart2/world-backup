@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Models exposing (Folder)
 import Msgs exposing (Msg)
+import Numeral exposing (format)
 import RemoteData exposing (WebData)
 
 
@@ -42,7 +43,8 @@ headerRow : Html Msg
 headerRow =
     div [ class "mdl-grid headers" ]
         [ div [ class "mdl-cell mdl-cell--2-col" ] [ text "Id" ]
-        , div [ class "mdl-cell mdl-cell--10-col" ] [ text "Path" ]
+        , div [ class "mdl-cell mdl-cell--8-col" ] [ text "Path" ]
+        , div [ class "mdl-cell mdl-cell--2-col" ] [ text "Number of Worlds" ]
         ]
 
 
@@ -55,5 +57,6 @@ folderRow : Folder -> Html Msg
 folderRow folder =
     div [ class "mdl-grid" ]
         [ div [ class "mdl-cell mdl-cell--2-col" ] [ text folder.id ]
-        , div [ class "mdl-cell mdl-cell--10-col" ] [ text folder.path ]
+        , div [ class "mdl-cell mdl-cell--8-col" ] [ text folder.path ]
+        , div [ class "mdl-cell mdl-cell--2-col" ] [ text (format "0,0" (toFloat folder.numberOfWorlds)) ]
         ]
