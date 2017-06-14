@@ -7,6 +7,7 @@
   "scripts": {
     "build": "NODE_ENV=production webpack -p",
     "client": "NODE_ENV=development webpack-dev-server --port 3000",
+    "server": "cd .. && go run main.go",
     "start": "nf start"
   },
   "dependencies": {
