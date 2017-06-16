@@ -6,6 +6,7 @@ import Models exposing (Folder)
 import Msgs exposing (Msg)
 import Numeral exposing (format)
 import RemoteData exposing (WebData)
+import Time.DateTime as DateTime exposing (DateTime)
 
 
 view : WebData (List Folder) -> Html Msg
@@ -43,7 +44,8 @@ headerRow : Html Msg
 headerRow =
     div [ class "mdl-grid headers" ]
         [ div [ class "mdl-cell mdl-cell--2-col" ] [ text "Id" ]
-        , div [ class "mdl-cell mdl-cell--8-col" ] [ text "Path" ]
+        , div [ class "mdl-cell mdl-cell--2-col" ] [ text "Last Run" ]
+        , div [ class "mdl-cell mdl-cell--6-col" ] [ text "Path" ]
         , div [ class "mdl-cell mdl-cell--2-col" ] [ text "Number of Worlds" ]
         ]
 
@@ -57,6 +59,7 @@ folderRow : Folder -> Html Msg
 folderRow folder =
     div [ class "mdl-grid" ]
         [ div [ class "mdl-cell mdl-cell--2-col" ] [ text folder.id ]
-        , div [ class "mdl-cell mdl-cell--8-col" ] [ text folder.path ]
+        , div [ class "mdl-cell mdl-cell--2-col" ] [ text (DateTime.toISO8601 folder.lastRun) ]
+        , div [ class "mdl-cell mdl-cell--6-col" ] [ text folder.path ]
         , div [ class "mdl-cell mdl-cell--2-col" ] [ text (format "0,0" (toFloat folder.numberOfWorlds)) ]
         ]
