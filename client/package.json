@@ -23,6 +23,7 @@
     "webpack-dev-server": "^2.4.5"
   },
   "devDependencies": {
+    "lobo": "^0.2.1",
     "node-sass": "^4.5.3",
     "sass-loader": "^6.0.5"
   }
