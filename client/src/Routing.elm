@@ -12,6 +12,7 @@ matchers : Parser (Route -> a) a
 matchers =
     oneOf
         [ map FoldersRoute top
+        , map FolderRoute (s "folders" </> string)
         , map FoldersRoute (s "folders")
         ]
 

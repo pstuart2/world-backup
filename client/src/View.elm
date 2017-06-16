@@ -1,6 +1,7 @@
 module View exposing (..)
 
 import Folders.List
+import Folders.View
 import Html exposing (Html, div, header, main_, span, text)
 import Html.Attributes exposing (class, href)
 import Models exposing (FolderId, Model)
@@ -38,8 +39,38 @@ page model =
         Models.FoldersRoute ->
             Folders.List.view model.folders
 
+        Models.FolderRoute id ->
+            folderViewPage model id
+
         Models.NotFoundRoute ->
             notFoundView
+
+
+folderViewPage : Model -> FolderId -> Html Msg
+folderViewPage model folderId =
+    case model.folders of
+        RemoteData.NotAsked ->
+            text ""
+
+        RemoteData.Loading ->
+            text "Loading ..."
+
+        RemoteData.Success folders ->
+            let
+                maybeFolder =
+                    folders
+                        |> List.filter (\folder -> folder.id == folderId)
+                        |> List.head
+            in
+            case maybeFolder of
+                Just folder ->
+                    Folders.View.view folder
+
+                Nothing ->
+                    notFoundView
+
+        RemoteData.Failure err ->
+            text (toString err)
 
 
 notFoundView : Html msg

@@ -54,7 +54,7 @@ folderDecoder =
 
 saveFolderUrl : FolderId -> String
 saveFolderUrl folderId =
-    "/api/folders/" ++ folderId
+    "/folders/" ++ folderId
 
 
 saveFolderRequest : Folder -> Http.Request Folder

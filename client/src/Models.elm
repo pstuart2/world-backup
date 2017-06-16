@@ -6,6 +6,7 @@ import Time.DateTime as DateTime exposing (DateTime)
 
 type Route
     = FoldersRoute
+    | FolderRoute FolderId
     | NotFoundRoute
 
 
