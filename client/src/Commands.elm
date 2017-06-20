@@ -2,9 +2,8 @@ module Commands exposing (..)
 
 import Http
 import Json.Decode as Decode exposing (Decoder, andThen, fail, string, succeed)
-import Json.Decode.Pipeline exposing (decode, required)
-import Json.Encode as Encode
-import Models exposing (Flags, Folder, FolderId)
+import Json.Decode.Pipeline exposing (decode, optional, required)
+import Models exposing (Backup, Flags, Folder, FolderId, World)
 import Msgs exposing (Msg)
 import RemoteData
 import Time.DateTime as DateTime exposing (DateTime)
@@ -12,13 +11,13 @@ import Time.DateTime as DateTime exposing (DateTime)
 
 fetchFolders : String -> Cmd Msg
 fetchFolders baseApiUrl =
-    Http.get (fetchFoldersUrl baseApiUrl) foldersDecoder
+    Http.get (foldersUrl baseApiUrl) foldersDecoder
         |> RemoteData.sendRequest
         |> Cmd.map Msgs.OnFetchFolders
 
 
-fetchFoldersUrl : String -> String
-fetchFoldersUrl baseApiUrl =
+foldersUrl : String -> String
+foldersUrl baseApiUrl =
     baseApiUrl ++ "/folders"
 
 
@@ -50,40 +49,42 @@ folderDecoder =
         |> required "modifiedAt" dateTimeDecoder
         |> required "lastRun" dateTimeDecoder
         |> required "numberOfWorlds" Decode.int
+        |> optional "worlds" (Decode.maybe worldsDecoder) Nothing
 
 
-saveFolderUrl : FolderId -> String
-saveFolderUrl folderId =
-    "/folders/" ++ folderId
+worldsDecoder : Decode.Decoder (List World)
+worldsDecoder =
+    Decode.list worldDecoder
 
 
-saveFolderRequest : Folder -> Http.Request Folder
-saveFolderRequest folder =
-    Http.request
-        { body = folderEncoder folder |> Http.jsonBody
-        , expect = Http.expectJson folderDecoder
-        , headers = []
-        , method = "PATCH"
-        , timeout = Nothing
-        , url = saveFolderUrl folder.id
-        , withCredentials = False
-        }
+worldDecoder : Decode.Decoder World
+worldDecoder =
+    decode World
+        |> required "id" Decode.string
+        |> required "name" Decode.string
+        |> required "backups" backupsDecoder
 
 
-
---
--- saveFolderCmd : Folder -> Cmd Msg
--- saveFolderCmd folder =
---     saveFolderRequest folder
---         |> Http.send Msgs.OnFolderSave
+backupsDecoder : Decode.Decoder (List Backup)
+backupsDecoder =
+    Decode.list backupDecoder
 
 
-folderEncoder : Folder -> Encode.Value
-folderEncoder folder =
-    let
-        attributes =
-            [ ( "id", Encode.string folder.id )
-            , ( "path", Encode.string folder.path )
-            ]
-    in
-    Encode.object attributes
+backupDecoder : Decode.Decoder Backup
+backupDecoder =
+    decode Backup
+        |> required "id" Decode.string
+        |> required "name" Decode.string
+        |> required "createdAt" dateTimeDecoder
+
+
+folderUrl : String -> FolderId -> String
+folderUrl baseApiUrl folderId =
+    baseApiUrl ++ "/folders/" ++ folderId
+
+
+fetchFolderDetails : String -> Folder -> Cmd Msg
+fetchFolderDetails baseApiUrl folder =
+    Http.get (folderUrl baseApiUrl folder.id) worldsDecoder
+        |> RemoteData.sendRequest
+        |> Cmd.map Msgs.OnFetchWorlds

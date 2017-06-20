@@ -1,6 +1,6 @@
 module Update exposing (..)
 
-import Models exposing (Folder, Model)
+import Models exposing (Folder, FolderId, Model, World)
 import Msgs exposing (Msg)
 import Navigation exposing (newUrl)
 import RemoteData
@@ -16,6 +16,9 @@ update msg model =
         Msgs.OnFetchFolders response ->
             ( { model | folders = response }, Cmd.none )
 
+        Msgs.OnFetchWorlds response ->
+            ( updateWorlds model "" response, Cmd.none )
+
         Msgs.OnLocationChange location ->
             let
                 newRoute =
@@ -24,12 +27,12 @@ update msg model =
             ( { model | route = newRoute }, Cmd.none )
 
 
-updateFolder : Model -> Folder -> Model
-updateFolder model updatedFolder =
+updateWorlds : Model -> FolderId -> RemoteData.WebData (List World) -> Model
+updateWorlds model folderId updatedWorlds =
     let
         pick currentFolder =
-            if updatedFolder.id == currentFolder.id then
-                updatedFolder
+            if folderId == currentFolder.id then
+                { currentFolder | worlds = RemoteData.toMaybe updatedWorlds }
             else
                 currentFolder
 

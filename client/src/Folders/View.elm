@@ -4,7 +4,6 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, value)
 import Models exposing (Folder)
 import Msgs exposing (Msg)
-import Routing exposing (foldersPath, onLinkClick)
 
 
 view : Folder -> Html Msg

@@ -60,7 +60,7 @@ folderRow : Folder -> Html Msg
 folderRow folder =
     div [ class "mdl-grid" ]
         [ div [ class "mdl-cell mdl-cell--2-col" ]
-            [ editBtn folder
+            [ viewFolderButton folder
             ]
         , div [ class "mdl-cell mdl-cell--2-col" ] [ text (DateTime.toISO8601 folder.lastRun) ]
         , div [ class "mdl-cell mdl-cell--6-col" ] [ text folder.path ]
@@ -68,8 +68,8 @@ folderRow folder =
         ]
 
 
-editBtn : Folder -> Html.Html Msg
-editBtn folder =
+viewFolderButton : Folder -> Html.Html Msg
+viewFolderButton folder =
     let
         path =
             folderPath folder.id

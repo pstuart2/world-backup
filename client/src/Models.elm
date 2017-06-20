@@ -40,4 +40,19 @@ type alias Folder =
     , modifiedAt : DateTime
     , lastRun : DateTime
     , numberOfWorlds : Int
+    , worlds : Maybe (List World)
+    }
+
+
+type alias World =
+    { id : String
+    , name : String
+    , backups : List Backup
+    }
+
+
+type alias Backup =
+    { id : String
+    , name : String
+    , createdAt : DateTime
     }
