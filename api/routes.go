@@ -21,6 +21,7 @@ func (api *API) SetUpRoutes() {
 
 	apiGroup := api.Server.Group("/api")
 	apiGroup.GET("/folders", api.getFolders)
+	apiGroup.GET("/folders/:id/worlds", api.getWorlds)
 
 	routes := api.Server.Routes()
 	for i := 0; i < len(routes); i++ {

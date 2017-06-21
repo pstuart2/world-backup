@@ -65,3 +65,13 @@ func (db *Db) GetFolderByPath(path string) *Folder {
 
 	return nil
 }
+
+func (db *Db) GetFolder(id string) *Folder {
+	for i := range db.data.Folders {
+		if db.data.Folders[i].Id == id {
+			return db.data.Folders[i]
+		}
+	}
+
+	return nil
+}

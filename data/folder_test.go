@@ -139,3 +139,23 @@ func TestFolder_FolderByPath(t *testing.T) {
 		})
 	})
 }
+
+func TestFolder_FolderById(t *testing.T) {
+	Convey("Given a list of folders", t, func() {
+		db.AddFolder("/some/cool1/place")
+		f2 := db.AddFolder("/some/cool2/place")
+		db.AddFolder("/some/cool3/place")
+		f4 := db.AddFolder("/some/cool4/place")
+		db.AddFolder("/some/cool5/place")
+
+		Convey("It should return the correct folder when asked", func() {
+			r1 := db.GetFolder(f2.Id)
+			r2 := db.GetFolder(f4.Id)
+			r3 := db.GetFolder("not-this")
+
+			So(r1.Id, ShouldEqual, f2.Id)
+			So(r2.Id, ShouldEqual, f4.Id)
+			So(r3, ShouldBeNil)
+		})
+	})
+}

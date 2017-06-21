@@ -19,6 +19,11 @@ func (m *ApiDbMock) Folders() []*data.Folder {
 	return args.Get(0).([]*data.Folder)
 }
 
+func (m *ApiDbMock) GetFolder(id string) *data.Folder {
+	args := m.Called(id)
+	return args.Get(0).(*data.Folder)
+}
+
 //endregion
 
 //region Echo Mock

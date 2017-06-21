@@ -83,8 +83,13 @@ folderUrl baseApiUrl folderId =
     baseApiUrl ++ "/folders/" ++ folderId
 
 
+worldsUrl : String -> FolderId -> String
+worldsUrl baseApiUrl folderId =
+    baseApiUrl ++ "/folders/" ++ folderId ++ "/worlds"
+
+
 fetchFolderWorlds : String -> FolderId -> Cmd Msg
 fetchFolderWorlds baseApiUrl folderId =
-    Http.get (folderUrl baseApiUrl folderId) worldsDecoder
+    Http.get (worldsUrl baseApiUrl folderId) worldsDecoder
         |> RemoteData.sendRequest
         |> Cmd.map Msgs.OnFetchWorlds

@@ -30,7 +30,7 @@ func TestAPI_Folders(t *testing.T) {
 			Db:  mockDb,
 		}
 
-		Convey("When the call to the BooksList succeeds", func() {
+		Convey("When the call to the Folders succeeds", func() {
 			w1 := data.World{Id: "w1"}
 			w2 := data.World{Id: "w2"}
 			w3 := data.World{Id: "w3"}
@@ -61,6 +61,64 @@ func TestAPI_Folders(t *testing.T) {
 					So(err, ShouldBeNil)
 
 					So(len(resultFolders), ShouldEqual, 3)
+
+					expectedString, _ := json.Marshal(expectedItems)
+					So(rec.Body.String(), ShouldEqual, string(expectedString))
+
+				})
+			})
+		})
+	})
+}
+
+func TestAPI_Worlds(t *testing.T) {
+	Convey("Given an api and context", t, func() {
+		e := echo.New()
+		req, _ := http.NewRequest(echo.GET, "/api/folders/jk0069/worlds", strings.NewReader(""))
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetParamNames("id")
+		c.SetParamValues("jk0069")
+
+		mockDb := new(ApiDbMock)
+
+		api := &API{
+			log: logrus.WithField("test", "TestAPI_Wolds"),
+			Db:  mockDb,
+		}
+
+		Convey("When the call to the getWorlds succeeds", func() {
+			w1 := data.World{Id: "w1", Name: "Something cool 1"}
+			w2 := data.World{Id: "w2", Name: "Something cool 2"}
+			w3 := data.World{Id: "w3", Name: "Something cool 3"}
+
+			expectedItems := []data.World{w1, w2, w3}
+
+			f1 := data.Folder{
+				Id:         "f-001",
+				Path:       "/this/be/h",
+				ModifiedAt: time.Now(),
+				LastRun:    time.Now(),
+				Worlds:     []*data.World{&w1, &w2, &w3},
+			}
+
+			mockDb.On("GetFolder", "jk0069").Return(&f1)
+
+			Convey("It should return http.StatusOK", func() {
+				resultErr := api.getWorlds(c)
+				So(resultErr, ShouldBeNil)
+
+				So(rec.Code, ShouldEqual, http.StatusOK)
+
+				Convey("And the worlds", func() {
+					var resultWorlds []data.World
+					err := json.Unmarshal(rec.Body.Bytes(), &resultWorlds)
+					So(err, ShouldBeNil)
+
+					So(len(resultWorlds), ShouldEqual, 3)
 
 					expectedString, _ := json.Marshal(expectedItems)
 					So(rec.Body.String(), ShouldEqual, string(expectedString))

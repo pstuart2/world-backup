@@ -30,6 +30,13 @@ func (api *API) getFolders(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, listItems)
 }
 
+func (api *API) getWorlds(ctx echo.Context) error {
+	folderId := ctx.Param("id")
+	folder := api.Db.GetFolder(folderId)
+
+	return ctx.JSON(http.StatusOK, folder.Worlds)
+}
+
 func folderToListItem(f *data.Folder) FolderListItem {
 	return FolderListItem{
 		Id:             f.Id,

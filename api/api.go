@@ -11,6 +11,7 @@ import (
 
 type IApiDb interface {
 	Folders() []*data.Folder
+	GetFolder(id string) *data.Folder
 }
 
 // API is the data holder for the API
