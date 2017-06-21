@@ -40,7 +40,7 @@ type alias Folder =
     , modifiedAt : DateTime
     , lastRun : DateTime
     , numberOfWorlds : Int
-    , worlds : Maybe (List World)
+    , worlds : WebData (List World)
     }
 
 

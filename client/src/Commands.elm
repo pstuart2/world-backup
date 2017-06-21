@@ -2,10 +2,10 @@ module Commands exposing (..)
 
 import Http
 import Json.Decode as Decode exposing (Decoder, andThen, fail, string, succeed)
-import Json.Decode.Pipeline exposing (decode, optional, required)
+import Json.Decode.Pipeline exposing (decode, hardcoded, optional, required)
 import Models exposing (Backup, Flags, Folder, FolderId, World)
 import Msgs exposing (Msg)
-import RemoteData
+import RemoteData exposing (WebData)
 import Time.DateTime as DateTime exposing (DateTime)
 
 
@@ -49,7 +49,7 @@ folderDecoder =
         |> required "modifiedAt" dateTimeDecoder
         |> required "lastRun" dateTimeDecoder
         |> required "numberOfWorlds" Decode.int
-        |> optional "worlds" (Decode.maybe worldsDecoder) Nothing
+        |> hardcoded RemoteData.Loading
 
 
 worldsDecoder : Decode.Decoder (List World)

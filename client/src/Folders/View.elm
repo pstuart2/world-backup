@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, value)
 import Models exposing (Backup, Folder, World)
 import Msgs exposing (Msg)
+import RemoteData
 import Time.DateTime as DateTime exposing (DateTime)
 
 
@@ -14,17 +15,20 @@ view folder =
         ]
 
 
-maybeList : Maybe (List World) -> Html Msg
-maybeList worlds =
-    case worlds of
-        Nothing ->
+maybeList : RemoteData.WebData (List World) -> Html Msg
+maybeList response =
+    case response of
+        RemoteData.NotAsked ->
+            text ""
+
+        RemoteData.Loading ->
             text "Loading..."
 
-        Just [] ->
-            text "No WOrlds :("
+        RemoteData.Success worlds ->
+            list worlds
 
-        _ ->
-            list (Maybe.withDefault [] worlds)
+        RemoteData.Failure error ->
+            text (toString error)
 
 
 list : List World -> Html Msg

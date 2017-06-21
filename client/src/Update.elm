@@ -35,7 +35,7 @@ updateWorlds model folderId updatedWorlds =
     let
         pick currentFolder =
             if folderId == currentFolder.id then
-                { currentFolder | worlds = RemoteData.toMaybe updatedWorlds }
+                { currentFolder | worlds = updatedWorlds }
             else
                 currentFolder
 
