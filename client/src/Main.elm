@@ -16,12 +16,12 @@ initialCommands apiUrl currentRoute =
             Routing.getLocationCommand apiUrl Models.FoldersRoute
 
         routeCommand =
-            if currentRoute == Models.FoldersRoute then
-                folderCommand
-            else
-                Cmd.batch [ Routing.getLocationCommand apiUrl currentRoute, folderCommand ]
+            Routing.getLocationCommand apiUrl currentRoute
     in
-    routeCommand
+    if currentRoute == Models.FoldersRoute then
+        folderCommand
+    else
+        Cmd.batch [ routeCommand, folderCommand ]
 
 
 init : Flags -> Location -> ( Model, Cmd Msg )
