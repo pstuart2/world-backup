@@ -79,6 +79,9 @@ const config = function (env) {
             stats: {
                 colors: true
             },
+            historyApiFallback: {
+                index: '/'
+            }
         },
 
 

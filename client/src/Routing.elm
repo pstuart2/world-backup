@@ -1,9 +1,11 @@
 module Routing exposing (..)
 
+import Commands exposing (fetchFolderWorlds)
 import Html exposing (Attribute)
 import Html.Events exposing (onWithOptions)
 import Json.Decode as Decode
-import Models exposing (FolderId, Route(..))
+import Models exposing (FolderId, Model, Route(..))
+import Msgs exposing (Msg)
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 
@@ -36,6 +38,16 @@ parseLocation location =
 
         Nothing ->
             NotFoundRoute
+
+
+getLocationCommand : Model -> Route -> Cmd Msg
+getLocationCommand model route =
+    case route of
+        Models.FolderRoute id ->
+            fetchFolderWorlds model.flags.apiUrl id
+
+        _ ->
+            Cmd.none
 
 
 foldersPath : String
