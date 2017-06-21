@@ -25,7 +25,7 @@ update msg model =
                     parseLocation location
 
                 newCommand =
-                    getLocationCommand model newRoute
+                    getLocationCommand model.flags.apiUrl newRoute
             in
             ( { model | route = newRoute }, newCommand )
 
