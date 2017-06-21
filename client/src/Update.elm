@@ -16,8 +16,8 @@ update msg model =
         Msgs.OnFetchFolders response ->
             ( { model | folders = response }, Cmd.none )
 
-        Msgs.OnFetchWorlds response ->
-            ( updateWorlds model "" response, Cmd.none )
+        Msgs.OnFetchWorlds folderId response ->
+            ( updateWorlds model folderId response, Cmd.none )
 
         Msgs.OnLocationChange location ->
             let

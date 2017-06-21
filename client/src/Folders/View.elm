@@ -1,31 +1,54 @@
-module Folders.View exposing (..)
+module Folders.View exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href, value)
-import Models exposing (Folder)
+import Models exposing (Backup, Folder, World)
 import Msgs exposing (Msg)
+import Time.DateTime as DateTime exposing (DateTime)
 
 
 view : Folder -> Html Msg
-view model =
+view folder =
     div []
-        [ form model
+        [ maybeList folder.worlds
         ]
 
 
-form : Folder -> Html Msg
-form folder =
-    div [ class "m3" ]
-        [ h1 [] [ text folder.path ]
-        , formLevel folder
+maybeList : Maybe (List World) -> Html Msg
+maybeList worlds =
+    case worlds of
+        Nothing ->
+            text "Loading..."
+
+        Just [] ->
+            text "No WOrlds :("
+
+        _ ->
+            list (Maybe.withDefault [] worlds)
+
+
+list : List World -> Html Msg
+list worlds =
+    div [ class "grid-outer" ]
+        (List.map worldSection worlds)
+
+
+worldSection : World -> Html Msg
+worldSection world =
+    div []
+        [ h2 [] [ text world.name ]
+        , worldBackups world.backups
         ]
 
 
-formLevel : Folder -> Html Msg
-formLevel folder =
-    div [ class "clearfix py1" ]
-        [ div [ class "col col-5" ] [ text "Level" ]
-        , div [ class "col col-7" ]
-            [ span [ class "h2 bold" ] [ text folder.id ]
-            ]
+worldBackups : List Backup -> Html Msg
+worldBackups backups =
+    div [ class "grid-body" ] (List.map worldBackup backups)
+
+
+worldBackup : Backup -> Html Msg
+worldBackup backup =
+    div [ class "mdl-grid" ]
+        [ div [ class "mdl-cell mdl-cell--2-col" ] [ text (DateTime.toISO8601 backup.createdAt) ]
+        , div [ class "mdl-cell mdl-cell--10-col" ] [ text backup.name ]
         ]

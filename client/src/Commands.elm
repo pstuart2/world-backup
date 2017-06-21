@@ -92,4 +92,4 @@ fetchFolderWorlds : String -> FolderId -> Cmd Msg
 fetchFolderWorlds baseApiUrl folderId =
     Http.get (worldsUrl baseApiUrl folderId) worldsDecoder
         |> RemoteData.sendRequest
-        |> Cmd.map Msgs.OnFetchWorlds
+        |> Cmd.map (Msgs.OnFetchWorlds folderId)

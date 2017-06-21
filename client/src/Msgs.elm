@@ -1,6 +1,6 @@
 module Msgs exposing (..)
 
-import Models exposing (Folder, World)
+import Models exposing (Folder, FolderId, World)
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 
@@ -8,5 +8,5 @@ import RemoteData exposing (WebData)
 type Msg
     = ChangeLocation String
     | OnFetchFolders (WebData (List Folder))
-    | OnFetchWorlds (WebData (List World))
+    | OnFetchWorlds FolderId (WebData (List World))
     | OnLocationChange Location

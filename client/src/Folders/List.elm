@@ -1,4 +1,4 @@
-module Folders.List exposing (..)
+module Folders.List exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
