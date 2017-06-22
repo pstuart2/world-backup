@@ -5,11 +5,18 @@ div.mdl-grid {
   border-bottom: solid 1px $gridRowSeparatorColor;
 
   &.headers {
-    border-bottom: solid 1px $gridHeaderRowSeparatorColor;
+	border-bottom: solid 1px $gridHeaderRowSeparatorColor;
 
-    .mdl-cell {
-      font-weight: bolder;
-      font-size: x-large;
-    }
+	.mdl-cell {
+	  font-weight: bolder;
+	  font-size: x-large;
+	}
+  }
+}
+
+.mdl-layout__header-row {
+  .mdl-button:first-child {
+	margin-left: -70px;
+	margin-right: 15px;
   }
 }

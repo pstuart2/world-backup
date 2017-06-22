@@ -2,7 +2,7 @@ module Update exposing (..)
 
 import Models exposing (Folder, FolderId, Model, World)
 import Msgs exposing (Msg)
-import Navigation exposing (newUrl)
+import Navigation exposing (back, newUrl)
 import RemoteData
 import Routing exposing (getLocationCommand, parseLocation)
 
@@ -12,6 +12,9 @@ update msg model =
     case msg of
         Msgs.ChangeLocation path ->
             ( model, newUrl path )
+
+        Msgs.GoBack ->
+            ( model, back 1 )
 
         Msgs.OnFetchFolders response ->
             ( { model | folders = response }, Cmd.none )

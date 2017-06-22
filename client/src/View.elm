@@ -2,11 +2,12 @@ module View exposing (..)
 
 import Folders.List
 import Folders.View
-import Html exposing (Html, div, header, main_, span, text)
+import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Models exposing (FolderId, Model)
 import Msgs exposing (Msg)
 import RemoteData
+import Routing exposing (homePath, onLinkClick)
 
 
 view : Model -> Html Msg
@@ -21,7 +22,9 @@ pageHeader : Model -> Html Msg
 pageHeader model =
     header [ class "mdl-layout__header" ]
         [ div [ class "mdl-layout__header-row" ]
-            [ span [ class "mdl-layout-title" ] [ text "World Backup" ] ]
+            [ homeButton
+            , span [ class "mdl-layout-title" ] [ text "World Backup" ]
+            ]
         ]
 
 
@@ -31,6 +34,16 @@ pageContent model =
         [ div [ class "page-content" ]
             [ page model ]
         ]
+
+
+homeButton : Html.Html Msg
+homeButton =
+    let
+        path =
+            homePath
+    in
+    a [ class "mdl-button mdl-js-button mdl-button--icon", href path, onLinkClick (Msgs.ChangeLocation path) ]
+        [ i [ class "fa fa-home" ] [] ]
 
 
 page : Model -> Html Msg

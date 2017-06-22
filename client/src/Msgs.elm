@@ -7,6 +7,7 @@ import RemoteData exposing (WebData)
 
 type Msg
     = ChangeLocation String
+    | GoBack
     | OnFetchFolders (WebData (List Folder))
     | OnFetchWorlds FolderId (WebData (List World))
     | OnLocationChange Location

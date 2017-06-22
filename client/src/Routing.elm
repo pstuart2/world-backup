@@ -53,6 +53,11 @@ getLocationCommand apiUrl route =
             Cmd.none
 
 
+homePath : String
+homePath =
+    "/"
+
+
 foldersPath : String
 foldersPath =
     "/folders"
