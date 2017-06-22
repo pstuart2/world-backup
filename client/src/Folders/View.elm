@@ -41,18 +41,26 @@ worldSection : World -> Html Msg
 worldSection world =
     div []
         [ h2 [] [ text world.name ]
-        , worldBackups world.backups
+        , backupsTable world.backups
         ]
 
 
-worldBackups : List Backup -> Html Msg
-worldBackups backups =
-    div [ class "grid-body" ] (List.map worldBackup backups)
+backupsTable : List Backup -> Html Msg
+backupsTable backups =
+    table [ class "mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp" ]
+        [ thead []
+            [ tr []
+                [ th [ class "mdl-data-table__cell--non-numeric" ] [ text "Name" ]
+                , th [ class "mdl-data-table__cell--non-numeric" ] [ text "Created At" ]
+                ]
+            ]
+        , tbody [] (List.map backupRow backups)
+        ]
 
 
-worldBackup : Backup -> Html Msg
-worldBackup backup =
-    div [ class "mdl-grid" ]
-        [ div [ class "mdl-cell mdl-cell--2-col" ] [ text (DateTime.toISO8601 backup.createdAt) ]
-        , div [ class "mdl-cell mdl-cell--10-col" ] [ text backup.name ]
+backupRow : Backup -> Html Msg
+backupRow backup =
+    tr []
+        [ td [ class "mdl-data-table__cell--non-numeric" ] [ text backup.name ]
+        , td [ class "mdl-data-table__cell--non-numeric" ] [ text (DateTime.toISO8601 backup.createdAt) ]
         ]

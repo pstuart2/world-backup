@@ -2,6 +2,8 @@
   <dictionary name="paul">
     <words>
       <w>archiver</w>
+      <w>tbody</w>
+      <w>thead</w>
     </words>
   </dictionary>
 </component>
