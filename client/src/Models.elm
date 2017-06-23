@@ -1,5 +1,6 @@
 module Models exposing (..)
 
+import Material
 import RemoteData exposing (WebData)
 import Time.DateTime as DateTime exposing (DateTime)
 
@@ -17,6 +18,7 @@ type alias Flags =
 
 type alias Model =
     { flags : Flags
+    , mdl : Material.Model
     , folders : WebData (List Folder)
     , route : Route
     }
@@ -25,6 +27,7 @@ type alias Model =
 initialModel : Flags -> Route -> Model
 initialModel flags route =
     { flags = flags
+    , mdl = Material.model
     , folders = RemoteData.Loading
     , route = route
     }

@@ -3,7 +3,10 @@ module View exposing (..)
 import Folders.List
 import Folders.View
 import Html exposing (..)
-import Html.Attributes exposing (class, href)
+import Html.Attributes exposing (class, href, style)
+import Material.Button as Button
+import Material.Layout as Layout
+import Material.Options as Options exposing (Style)
 import Models exposing (FolderId, Model)
 import Msgs exposing (Msg)
 import RemoteData
@@ -12,45 +15,42 @@ import Routing exposing (homePath, onLinkClick)
 
 view : Model -> Html Msg
 view model =
-    div [ class "mdl-layout mdl-js-layout mdl-layout--fixed-header" ]
-        [ pageHeader model
-        , pageContent model
+    Layout.render Msgs.Mdl
+        model.mdl
+        [ Layout.fixedHeader
         ]
+        { header = [ pageHeader model ]
+        , drawer = []
+        , tabs = ( [], [] )
+        , main = [ page model ]
+        }
 
 
 pageHeader : Model -> Html Msg
 pageHeader model =
-    header [ class "mdl-layout__header" ]
-        [ div [ class "mdl-layout__header-row" ]
-            [ homeButton
-            , span [ class "mdl-layout-title" ] [ text "World Backup" ]
-            ]
+    h3 [ style [ ( "padding-left", "10px" ) ] ]
+        [ homeButton model
+        , text "World Backup"
         ]
 
 
-pageContent : Model -> Html Msg
-pageContent model =
-    main_ [ class "mdl-layout__content" ]
-        [ div [ class "page-content" ]
-            [ page model ]
+homeButton : Model -> Html.Html Msg
+homeButton model =
+    Button.render Msgs.Mdl
+        [ 0 ]
+        model.mdl
+        [ Button.icon
+        , Options.onClick (Msgs.ChangeLocation homePath)
+        , Options.css "margin-right" "20px"
         ]
-
-
-homeButton : Html.Html Msg
-homeButton =
-    let
-        path =
-            homePath
-    in
-    a [ class "mdl-button mdl-js-button mdl-button--icon", href path, onLinkClick (Msgs.ChangeLocation path) ]
         [ i [ class "fa fa-home" ] [] ]
 
 
-page : Model -> Html Msg
+page : Model -> Html Msgs.Msg
 page model =
     case model.route of
         Models.FoldersRoute ->
-            Folders.List.view model.folders
+            Folders.List.view model
 
         Models.FolderRoute id ->
             folderViewPage model id

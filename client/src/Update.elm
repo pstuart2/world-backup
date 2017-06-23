@@ -1,5 +1,6 @@
 module Update exposing (..)
 
+import Material
 import Models exposing (Folder, FolderId, Model, World)
 import Msgs exposing (Msg)
 import Navigation exposing (back, newUrl)
@@ -10,6 +11,9 @@ import Routing exposing (getLocationCommand, parseLocation)
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Msgs.Mdl msg_ ->
+            Material.update Msgs.Mdl msg_ model
+
         Msgs.ChangeLocation path ->
             ( model, newUrl path )
 

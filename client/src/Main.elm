@@ -1,6 +1,5 @@
 module Main exposing (..)
 
-import Commands exposing (fetchFolders)
 import Models exposing (Flags, Model, Route, initialModel)
 import Msgs exposing (Msg)
 import Navigation exposing (Location)

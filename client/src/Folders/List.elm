@@ -2,7 +2,10 @@ module Folders.List exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
-import Models exposing (Folder)
+import Material.Button as Button
+import Material.Grid as Grid exposing (Device(..), cell, grid, size)
+import Material.Options as Options
+import Models exposing (Folder, Model)
 import Msgs exposing (Msg)
 import Numeral exposing (format)
 import RemoteData exposing (WebData)
@@ -10,16 +13,14 @@ import Routing exposing (folderPath, onLinkClick)
 import Time.DateTime as DateTime exposing (DateTime)
 
 
-view : WebData (List Folder) -> Html Msg
-view response =
-    div []
-        [ maybeList response
-        ]
+view : Model -> Html Msg
+view model =
+    maybeList model
 
 
-maybeList : WebData (List Folder) -> Html Msg
-maybeList response =
-    case response of
+maybeList : Model -> Html Msg
+maybeList model =
+    case model.folders of
         RemoteData.NotAsked ->
             text ""
 
@@ -27,52 +28,52 @@ maybeList response =
             text "Loading..."
 
         RemoteData.Success folders ->
-            list folders
+            list model folders
 
         RemoteData.Failure error ->
             text (toString error)
 
 
-list : List Folder -> Html Msg
-list folders =
+list : Model -> List Folder -> Html Msg
+list model folders =
     div [ class "grid-outer" ]
         [ headerRow
-        , folderBody folders
+        , folderBody model folders
         ]
 
 
 headerRow : Html Msg
 headerRow =
-    div [ class "mdl-grid headers" ]
-        [ div [ class "mdl-cell mdl-cell--2-col" ] [ text "" ]
-        , div [ class "mdl-cell mdl-cell--2-col" ] [ text "Last Run" ]
-        , div [ class "mdl-cell mdl-cell--6-col" ] [ text "Path" ]
-        , div [ class "mdl-cell mdl-cell--2-col" ] [ text "Number of Worlds" ]
+    grid [ Options.cs "headers" ]
+        [ cell [ size All 2 ] [ text "" ]
+        , cell [ size All 2 ] [ text "Last Run" ]
+        , cell [ size All 6 ] [ text "Path" ]
+        , cell [ size All 2 ] [ text "# of Worlds" ]
         ]
 
 
-folderBody : List Folder -> Html Msg
-folderBody folders =
-    div [ class "grid-body" ] (List.map folderRow folders)
+folderBody : Model -> List Folder -> Html Msg
+folderBody model folders =
+    div [] (List.map (folderRow model) folders)
 
 
-folderRow : Folder -> Html Msg
-folderRow folder =
-    div [ class "mdl-grid" ]
-        [ div [ class "mdl-cell mdl-cell--2-col" ]
-            [ viewFolderButton folder
-            ]
-        , div [ class "mdl-cell mdl-cell--2-col" ] [ text (DateTime.toISO8601 folder.lastRun) ]
-        , div [ class "mdl-cell mdl-cell--6-col" ] [ text folder.path ]
-        , div [ class "mdl-cell mdl-cell--2-col" ] [ text (format "0,0" (toFloat folder.numberOfWorlds)) ]
+folderRow : Model -> Folder -> Html Msg
+folderRow model folder =
+    grid []
+        [ cell [ size All 2 ] [ viewFolderButton model folder ]
+        , cell [ size All 2 ] [ text (DateTime.toISO8601 folder.lastRun) ]
+        , cell [ size All 6 ] [ text folder.path ]
+        , cell [ size All 2 ] [ text (format "0,0" (toFloat folder.numberOfWorlds)) ]
         ]
 
 
-viewFolderButton : Folder -> Html.Html Msg
-viewFolderButton folder =
-    let
-        path =
-            folderPath folder.id
-    in
-    a [ class "mdl-button mdl-js-button mdl-button--raised mdl-button--colored", href path, onLinkClick (Msgs.ChangeLocation path) ]
+viewFolderButton : Model -> Folder -> Html.Html Msg
+viewFolderButton model folder =
+    Button.render Msgs.Mdl
+        [ 0 ]
+        model.mdl
+        [ Button.raised
+        , Button.colored
+        , Options.onClick (Msgs.ChangeLocation (folderPath folder.id))
+        ]
         [ text "View" ]
