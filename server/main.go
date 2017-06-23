@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"world-backup/cmd"
+	"world-backup/server/cmd"
 )
 
 func main() {

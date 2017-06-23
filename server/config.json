@@ -9,5 +9,5 @@
     "file": "",
     "level": "debug"
   },
-  "staticRoot": "client/dist/"
+  "staticRoot": "../client/dist/"
 }

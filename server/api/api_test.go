@@ -3,7 +3,7 @@ package api
 import (
 	"testing"
 
-	"world-backup/conf"
+	"world-backup/server/conf"
 
 	"github.com/Sirupsen/logrus"
 	. "github.com/smartystreets/goconvey/convey"

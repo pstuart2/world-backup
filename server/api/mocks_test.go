@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"world-backup/data"
+	"world-backup/server/data"
 
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/mock"

@@ -1,12 +1,12 @@
 package watcher
 
 import (
-	"world-backup/conf"
+	"world-backup/server/conf"
 
 	"fmt"
 	"time"
 
-	"world-backup/data"
+	"world-backup/server/data"
 
 	"os"
 

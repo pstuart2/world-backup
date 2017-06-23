@@ -5,8 +5,8 @@ import (
 	"github.com/labstack/echo"
 
 	"fmt"
-	"world-backup/conf"
-	"world-backup/data"
+	"world-backup/server/conf"
+	"world-backup/server/data"
 )
 
 type IApiDb interface {

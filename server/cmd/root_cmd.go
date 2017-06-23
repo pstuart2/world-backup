@@ -2,17 +2,17 @@ package cmd
 
 import (
 	"log"
-	"world-backup/conf"
-	"world-backup/data"
+	"world-backup/server/conf"
+	"world-backup/server/data"
 
 	"github.com/spf13/cobra"
 
 	"os"
-	"world-backup/api"
+	"world-backup/server/api"
 
-	"world-backup/watcher"
+	"world-backup/server/watcher"
 
-	"world-backup/fs"
+	"world-backup/server/fs"
 
 	"github.com/spf13/afero"
 )

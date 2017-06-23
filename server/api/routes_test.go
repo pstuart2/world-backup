@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"world-backup/conf"
+	"world-backup/server/conf"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"

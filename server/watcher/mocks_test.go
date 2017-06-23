@@ -1,7 +1,7 @@
 package watcher
 
 import (
-	"world-backup/data"
+	"world-backup/server/data"
 
 	"os"
 

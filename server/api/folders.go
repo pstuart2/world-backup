@@ -5,7 +5,7 @@ import (
 
 	"time"
 
-	"world-backup/data"
+	"world-backup/server/data"
 
 	"github.com/labstack/echo"
 )

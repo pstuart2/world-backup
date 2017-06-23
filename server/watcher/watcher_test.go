@@ -2,11 +2,11 @@ package watcher
 
 import (
 	"testing"
-	"world-backup/conf"
+	"world-backup/server/conf"
 
 	"errors"
 	"time"
-	"world-backup/data"
+	"world-backup/server/data"
 
 	"os"
 

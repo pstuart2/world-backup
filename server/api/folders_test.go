@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"time"
-	"world-backup/data"
+	"world-backup/server/data"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
