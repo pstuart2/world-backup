@@ -1,7 +1,9 @@
 module Folders.View exposing (view)
 
-import Html exposing (..)
+import Html exposing (Html, div, h2, text)
 import Html.Attributes exposing (class, href, value)
+import Material.Options as Options
+import Material.Table as Table exposing (table, tbody, td, th, thead, tr)
 import Models exposing (Backup, Folder, World)
 import Msgs exposing (Msg)
 import RemoteData
@@ -47,11 +49,11 @@ worldSection world =
 
 backupsTable : List Backup -> Html Msg
 backupsTable backups =
-    table [ class "mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp" ]
+    table [ Options.css "width" "100%" ]
         [ thead []
             [ tr []
-                [ th [ class "mdl-data-table__cell--non-numeric" ] [ text "Name" ]
-                , th [ class "mdl-data-table__cell--non-numeric" ] [ text "Created At" ]
+                [ th [ Table.numeric ] [ text "Name" ]
+                , th [] [ text "Created At" ]
                 ]
             ]
         , tbody [] (List.map backupRow backups)
@@ -61,6 +63,6 @@ backupsTable backups =
 backupRow : Backup -> Html Msg
 backupRow backup =
     tr []
-        [ td [ class "mdl-data-table__cell--non-numeric" ] [ text backup.name ]
-        , td [ class "mdl-data-table__cell--non-numeric" ] [ text (DateTime.toISO8601 backup.createdAt) ]
+        [ td [ Table.numeric ] [ text backup.name ]
+        , td [] [ text (DateTime.toISO8601 backup.createdAt) ]
         ]
