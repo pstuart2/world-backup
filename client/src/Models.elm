@@ -37,6 +37,10 @@ type alias FolderId =
     String
 
 
+type alias Icon =
+    String
+
+
 type alias Folder =
     { id : FolderId
     , path : String

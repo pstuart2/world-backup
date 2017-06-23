@@ -77,7 +77,7 @@ folderViewPage model folderId =
             in
             case maybeFolder of
                 Just folder ->
-                    Folders.View.view folder
+                    Folders.View.view model folder
 
                 Nothing ->
                     notFoundView
