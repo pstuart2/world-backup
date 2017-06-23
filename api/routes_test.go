@@ -33,6 +33,7 @@ func TestSetUpRoutes(t *testing.T) {
 
 		groupMock.On("GET", "/folders", mock.Anything, mock.Anything).Once()
 		groupMock.On("GET", "/folders/:id/worlds", mock.Anything, mock.Anything).Once()
+		groupMock.On("DELETE", "/folders/:id/worlds/:wid/backups/:bid", mock.Anything, mock.Anything).Once()
 
 		routes := []echo.Route{
 			{Path: "/something", Method: "put"},
@@ -53,6 +54,9 @@ func TestSetUpRoutes(t *testing.T) {
 
 			So(groupMock.Calls[1].Arguments.Get(0), ShouldEqual, "/folders/:id/worlds")
 			So(groupMock.Calls[1].Arguments.Get(1), ShouldEqual, api.getWorlds)
+
+			So(groupMock.Calls[2].Arguments.Get(0), ShouldEqual, "/folders/:id/worlds/backups/:bid")
+			So(groupMock.Calls[2].Arguments.Get(1), ShouldEqual, api.deleteWorldBackup)
 		})
 
 	})

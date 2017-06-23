@@ -46,3 +46,15 @@ func folderToListItem(f *data.Folder) FolderListItem {
 		NumberOfWorlds: len(f.Worlds),
 	}
 }
+
+func (api *API) deleteWorldBackup(ctx echo.Context) error {
+	folderId := ctx.Param("id")
+	worldId := ctx.Param("wid")
+	backupId := ctx.Param("wid")
+
+	log := getLogger(ctx)
+
+	log.Infof("Deleting backup F: %d W: %d B: %d", folderId, worldId, backupId)
+
+	return nil
+}
