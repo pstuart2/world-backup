@@ -1,6 +1,10 @@
 $gridHeaderRowSeparatorColor: #2C3F49;
 $gridRowSeparatorColor: lighten($gridHeaderRowSeparatorColor, 50%);
 
+div.elm-overlay {
+  z-index: 2
+}
+
 div.mdl-grid {
   border-bottom: solid 1px $gridRowSeparatorColor;
 
