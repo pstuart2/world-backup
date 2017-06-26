@@ -35,14 +35,6 @@ fetchFolderWorlds baseApiUrl folderId =
         |> Cmd.map (Msgs.OnFetchWorlds folderId)
 
 
-
---deleteBackup : String -> FolderId -> WorldId -> BackupId -> Cmd Msg
---deleteBackup baseApiUrl folderId worldId backupId =
---    delete (Urls.backup baseApiUrl folderId worldId backupId)
---        |> Http.send
---        |> Msgs.OnBackupDeleted folderId worldId backupId
-
-
 deleteBackup : String -> FolderId -> WorldId -> BackupId -> Cmd Msg
 deleteBackup baseApiUrl folderId worldId backupId =
     let

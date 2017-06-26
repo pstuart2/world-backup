@@ -2,7 +2,7 @@ module Update exposing (..)
 
 import Api
 import Material
-import Models exposing (Folder, FolderId, Model, World)
+import Models exposing (..)
 import Msgs exposing (Msg)
 import Navigation exposing (back, newUrl)
 import RemoteData
@@ -46,7 +46,7 @@ update msg model =
         Msgs.OnBackupDeleted folderId worldId backupId result ->
             case result of
                 Ok _ ->
-                    ( model, Cmd.none )
+                    ( deleteBackup model folderId worldId backupId, Cmd.none )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -63,6 +63,36 @@ updateWorlds model folderId updatedWorlds =
 
         updateFolderList folders =
             List.map pick folders
+
+        updatedFolders =
+            RemoteData.map updateFolderList model.folders
+    in
+    { model | folders = updatedFolders }
+
+
+deleteBackup : Model -> FolderId -> WorldId -> BackupId -> Model
+deleteBackup model folderId worldId backupId =
+    let
+        isNotDeleted currentBackup =
+            backupId /= currentBackup.id
+
+        findWorld currentWorld =
+            if worldId == currentWorld.id then
+                { currentWorld | backups = List.filter isNotDeleted currentWorld.backups }
+            else
+                currentWorld
+
+        updateWorldsList worlds =
+            List.map findWorld worlds
+
+        findFolder currentFolder =
+            if folderId == currentFolder.id then
+                { currentFolder | worlds = RemoteData.map updateWorldsList currentFolder.worlds }
+            else
+                currentFolder
+
+        updateFolderList folders =
+            List.map findFolder folders
 
         updatedFolders =
             RemoteData.map updateFolderList model.folders
