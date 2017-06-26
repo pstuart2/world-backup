@@ -58,3 +58,15 @@ func (api *API) deleteWorldBackup(ctx echo.Context) error {
 
 	return nil
 }
+
+func (api *API) restoreWorldBackup(ctx echo.Context) error {
+	folderId := ctx.Param("id")
+	worldId := ctx.Param("wid")
+	backupId := ctx.Param("wid")
+
+	log := getLogger(ctx)
+
+	log.Infof("Restoring backup F: %s W: %s B: %s", folderId, worldId, backupId)
+
+	return nil
+}
