@@ -1,5 +1,6 @@
 module Update exposing (..)
 
+import Api
 import Material
 import Models exposing (Folder, FolderId, Model, World)
 import Msgs exposing (Msg)
@@ -38,6 +39,17 @@ update msg model =
                     getLocationCommand model.flags.apiUrl newRoute
             in
             ( { model | route = newRoute }, newCommand )
+
+        Msgs.DeleteBackup folderId worldId backupId ->
+            ( model, Api.deleteBackup model.flags.apiUrl folderId worldId backupId )
+
+        Msgs.OnBackupDeleted folderId worldId backupId result ->
+            case result of
+                Ok _ ->
+                    ( model, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
 
 updateWorlds : Model -> FolderId -> RemoteData.WebData (List World) -> Model

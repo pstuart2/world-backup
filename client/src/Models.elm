@@ -37,7 +37,15 @@ type alias FolderId =
     String
 
 
-type alias Icon =
+type alias WorldId =
+    String
+
+
+type alias BackupId =
+    String
+
+
+type alias IconClass =
     String
 
 

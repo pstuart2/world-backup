@@ -6,7 +6,7 @@ import Material.Button as Button
 import Material.Color as Color
 import Material.Options as Options
 import Material.Table as Table exposing (table, tbody, td, th, thead, tr)
-import Models exposing (Backup, Folder, Icon, Model, World)
+import Models exposing (..)
 import Msgs exposing (Msg)
 import RemoteData
 import Time.DateTime as DateTime exposing (DateTime)
@@ -15,12 +15,12 @@ import Time.DateTime as DateTime exposing (DateTime)
 view : Model -> Folder -> Html Msg
 view model folder =
     div []
-        [ maybeList model folder.worlds
+        [ maybeList model folder.id folder.worlds
         ]
 
 
-maybeList : Model -> RemoteData.WebData (List World) -> Html Msg
-maybeList model response =
+maybeList : Model -> FolderId -> RemoteData.WebData (List World) -> Html Msg
+maybeList model folderId response =
     case response of
         RemoteData.NotAsked ->
             text ""
@@ -29,28 +29,28 @@ maybeList model response =
             text "Loading..."
 
         RemoteData.Success worlds ->
-            list model worlds
+            list model folderId worlds
 
         RemoteData.Failure error ->
             text (toString error)
 
 
-list : Model -> List World -> Html Msg
-list model worlds =
+list : Model -> FolderId -> List World -> Html Msg
+list model folderId worlds =
     div [ class "grid-outer" ]
-        (List.map (worldSection model) worlds)
+        (List.map (worldSection model folderId) worlds)
 
 
-worldSection : Model -> World -> Html Msg
-worldSection model world =
+worldSection : Model -> FolderId -> World -> Html Msg
+worldSection model folderId world =
     div []
         [ h2 [] [ text world.name ]
-        , backupsTable model world.backups
+        , backupsTable model folderId world.id world.backups
         ]
 
 
-backupsTable : Model -> List Backup -> Html Msg
-backupsTable model backups =
+backupsTable : Model -> FolderId -> WorldId -> List Backup -> Html Msg
+backupsTable model folderId worldId backups =
     table [ Options.css "width" "100%" ]
         [ thead []
             [ tr []
@@ -59,15 +59,15 @@ backupsTable model backups =
                 , th [] [ text "Created At" ]
                 ]
             ]
-        , tbody [] (List.map (backupRow model) backups)
+        , tbody [] (List.map (backupRow model folderId worldId) backups)
         ]
 
 
-backupRow : Model -> Backup -> Html Msg
-backupRow model backup =
+backupRow : Model -> FolderId -> WorldId -> Backup -> Html Msg
+backupRow model folderId worldId backup =
     tr []
         [ td [ Table.numeric ]
-            [ iconButton model "fa fa-remove" (Color.color Color.Red Color.S900) Msgs.DoNothing
+            [ iconButton model "fa fa-remove" (Color.color Color.Red Color.S900) (Msgs.DeleteBackup folderId worldId backup.id)
             , iconButton model "fa fa-check" (Color.color Color.Green Color.S900) Msgs.DoNothing
             ]
         , td [ Table.numeric ] [ text backup.name ]
@@ -75,7 +75,7 @@ backupRow model backup =
         ]
 
 
-iconButton : Model -> Icon -> Color.Color -> Msg -> Html.Html Msg
+iconButton : Model -> IconClass -> Color.Color -> Msg -> Html.Html Msg
 iconButton model icon color clickMsg =
     Button.render Msgs.Mdl
         [ 0 ]

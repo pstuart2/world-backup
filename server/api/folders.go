@@ -54,7 +54,7 @@ func (api *API) deleteWorldBackup(ctx echo.Context) error {
 
 	log := getLogger(ctx)
 
-	log.Infof("Deleting backup F: %d W: %d B: %d", folderId, worldId, backupId)
+	log.Infof("Deleting backup F: %s W: %s B: %s", folderId, worldId, backupId)
 
 	return nil
 }

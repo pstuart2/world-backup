@@ -1,24 +1,10 @@
 module Commands exposing (..)
 
-import Http
 import Json.Decode as Decode exposing (Decoder, andThen, fail, string, succeed)
 import Json.Decode.Pipeline exposing (decode, hardcoded, optional, required)
 import Models exposing (Backup, Flags, Folder, FolderId, World)
-import Msgs exposing (Msg)
 import RemoteData exposing (WebData)
 import Time.DateTime as DateTime exposing (DateTime)
-
-
-fetchFolders : String -> Cmd Msg
-fetchFolders baseApiUrl =
-    Http.get (foldersUrl baseApiUrl) foldersDecoder
-        |> RemoteData.sendRequest
-        |> Cmd.map Msgs.OnFetchFolders
-
-
-foldersUrl : String -> String
-foldersUrl baseApiUrl =
-    baseApiUrl ++ "/folders"
 
 
 dateTimeDecoder : Decoder DateTime
@@ -76,20 +62,3 @@ backupDecoder =
         |> required "id" Decode.string
         |> required "name" Decode.string
         |> required "createdAt" dateTimeDecoder
-
-
-folderUrl : String -> FolderId -> String
-folderUrl baseApiUrl folderId =
-    baseApiUrl ++ "/folders/" ++ folderId
-
-
-worldsUrl : String -> FolderId -> String
-worldsUrl baseApiUrl folderId =
-    baseApiUrl ++ "/folders/" ++ folderId ++ "/worlds"
-
-
-fetchFolderWorlds : String -> FolderId -> Cmd Msg
-fetchFolderWorlds baseApiUrl folderId =
-    Http.get (worldsUrl baseApiUrl folderId) worldsDecoder
-        |> RemoteData.sendRequest
-        |> Cmd.map (Msgs.OnFetchWorlds folderId)
