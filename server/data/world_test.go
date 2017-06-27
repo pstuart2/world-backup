@@ -87,3 +87,32 @@ func TestWorld_RemoveBackup(t *testing.T) {
 		})
 	})
 }
+
+func TestWorld_GetBackup(t *testing.T) {
+	Convey("Given a world with backups", t, func() {
+		world := World{}
+		world.AddBackup("Backup 001")
+		world.AddBackup("Backup 002")
+		b3 := world.AddBackup("Backup 003")
+		b4 := world.AddBackup("Backup 004")
+		world.AddBackup("Backup 005")
+
+		Convey("When GetBackup is called with a valid id", func() {
+			r1 := world.GetBackup(b3.Id)
+			r2 := world.GetBackup(b4.Id)
+
+			Convey("It should return the backup", func() {
+				So(r1.Id, ShouldEqual, b3.Id)
+				So(r2.Id, ShouldEqual, b4.Id)
+			})
+		})
+
+		Convey("When GetBackup is called with an invalid id", func() {
+			r3 := world.GetBackup("nonon")
+
+			Convey("It should return nil", func() {
+				So(r3, ShouldBeNil)
+			})
+		})
+	})
+}

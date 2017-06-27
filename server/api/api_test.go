@@ -36,15 +36,17 @@ func TestNewAPI(t *testing.T) {
 	Convey("Given a logger, config and an db", t, func() {
 		conf := conf.Config{}
 		db := new(ApiDbMock)
+		fs := new(ApiFsMock)
 		log := logrus.WithField("test", "TestNewApi")
 
 		Convey("It should return a new api object", func() {
-			api := NewAPI(log, &conf, db)
+			api := NewAPI(log, &conf, db, fs)
 
 			So(api, ShouldNotBeNil)
 			So(api.config, ShouldEqual, &conf)
 			So(api.Server, ShouldNotBeNil)
-			So(api.Db, ShouldNotBeNil)
+			So(api.Db, ShouldEqual, db)
+			So(api.Fs, ShouldEqual, fs)
 		})
 
 	})

@@ -33,3 +33,7 @@ func (f *FileSystem) ReadDir(dirname string) ([]os.FileInfo, error) {
 func (f *FileSystem) Remove(name string) error {
 	return f.af.Remove(name)
 }
+
+func (f *FileSystem) Exists(path string) (bool, error) {
+	return f.af.Exists(path)
+}

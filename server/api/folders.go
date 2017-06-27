@@ -7,6 +7,8 @@ import (
 
 	"world-backup/server/data"
 
+	"path"
+
 	"github.com/labstack/echo"
 )
 
@@ -50,13 +52,29 @@ func folderToListItem(f *data.Folder) FolderListItem {
 func (api *API) deleteWorldBackup(ctx echo.Context) error {
 	folderId := ctx.Param("id")
 	worldId := ctx.Param("wid")
-	backupId := ctx.Param("wid")
+	backupId := ctx.Param("bid")
 
 	log := getLogger(ctx)
 
 	log.Infof("Deleting backup F: %s W: %s B: %s", folderId, worldId, backupId)
 
-	return nil
+	folder := api.Db.GetFolder(folderId)
+	world := folder.GetWorld(worldId)
+	backup := world.GetBackup(backupId)
+
+	fullBackupPath := path.Join(world.FullPath, backup.Name)
+
+	log.Infof("fullPath: %s", fullBackupPath)
+
+	exists, _ := api.Fs.Exists(fullBackupPath)
+	if exists {
+		if err := api.Fs.Remove(fullBackupPath); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, nil)
+		}
+	}
+
+	world.RemoveBackup(backupId)
+	return ctx.JSON(http.StatusOK, folder)
 }
 
 func (api *API) restoreWorldBackup(ctx echo.Context) error {

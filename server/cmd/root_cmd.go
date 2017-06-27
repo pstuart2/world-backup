@@ -54,7 +54,7 @@ func run(cmd *cobra.Command, args []string) {
 	w := watcher.NewWatcher(logger, config, fileSystem, db)
 	w.Start()
 
-	server := api.NewAPI(logger, config, db)
+	server := api.NewAPI(logger, config, db, fileSystem)
 	server.SetUpRoutes()
 
 	logger.Infof("Starting up server on port %d", config.Port)

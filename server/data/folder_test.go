@@ -50,6 +50,33 @@ func TestFolder_AddWorld(t *testing.T) {
 	})
 }
 
+func TestFolder_GetWorld(t *testing.T) {
+	Convey("Given a folder with worlds", t, func() {
+		f := Folder{Path: "/this/is/the/place"}
+		w1 := f.AddWorld("World 001")
+		w2 := f.AddWorld("World 002")
+		f.AddWorld("World 003")
+
+		Convey("When GetWorld is passed a valid id", func() {
+			actual1 := f.GetWorld(w1.Id)
+			actual2 := f.GetWorld(w2.Id)
+
+			Convey("It should return the correct world", func() {
+				So(actual1.Id, ShouldEqual, w1.Id)
+				So(actual2.Id, ShouldEqual, w2.Id)
+			})
+		})
+
+		Convey("When GetWorld is passed an invalid id", func() {
+			actual3 := f.GetWorld("nananana")
+
+			Convey("It should return nil", func() {
+				So(actual3, ShouldBeNil)
+			})
+		})
+	})
+}
+
 func TestFolder_GetWorldByName(t *testing.T) {
 	Convey("Given a folder with multiple worlds", t, func() {
 		folder := Folder{}

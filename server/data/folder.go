@@ -27,6 +27,16 @@ func (f *Folder) AddWorld(name string) *World {
 	return &world
 }
 
+func (f *Folder) GetWorld(id string) *World {
+	for i := range f.Worlds {
+		if f.Worlds[i].Id == id {
+			return f.Worlds[i]
+		}
+	}
+
+	return nil
+}
+
 func (f *Folder) GetWorldByName(name string) *World {
 	for i := range f.Worlds {
 		if f.Worlds[i].Name == name {

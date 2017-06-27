@@ -26,6 +26,23 @@ func (m *ApiDbMock) GetFolder(id string) *data.Folder {
 
 //endregion
 
+//region ApiFs Mock
+type ApiFsMock struct {
+	mock.Mock
+}
+
+func (m *ApiFsMock) Exists(path string) (bool, error) {
+	args := m.Called(path)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *ApiFsMock) Remove(name string) error {
+	args := m.Called(name)
+	return args.Error(0)
+}
+
+//endregion
+
 //region Echo Mock
 type EchoServerMock struct {
 	mock.Mock
