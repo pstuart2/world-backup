@@ -3,6 +3,8 @@ package api
 import (
 	"time"
 
+	"path"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -69,5 +71,5 @@ func (api *API) setupRequest(f echo.HandlerFunc) echo.HandlerFunc {
 func (api *API) index(ctx echo.Context) error {
 	log := getLogger(ctx)
 	log.Infof("Returning index from: %s", api.config.StaticRoot)
-	return ctx.File(api.config.StaticRoot + "index.html")
+	return api.Server.File(ctx, path.Join(api.config.StaticRoot, "index.html"))
 }

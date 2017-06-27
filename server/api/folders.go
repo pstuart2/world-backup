@@ -62,7 +62,7 @@ func (api *API) deleteWorldBackup(ctx echo.Context) error {
 	world := folder.GetWorld(worldId)
 	backup := world.GetBackup(backupId)
 
-	fullBackupPath := path.Join(world.FullPath, backup.Name)
+	fullBackupPath := path.Join(api.config.BackupDir, backup.Name)
 
 	log.Infof("fullPath: %s", fullBackupPath)
 

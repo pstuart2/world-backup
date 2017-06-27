@@ -123,3 +123,29 @@ func TestSetupRequest(t *testing.T) {
 		})
 	})
 }
+
+func TestRoutes_Index(t *testing.T) {
+	Convey("Given a context", t, func() {
+		echoMock := new(EchoServerMock)
+
+		e := echo.New()
+		req, _ := http.NewRequest(echo.GET, "/users", strings.NewReader(""))
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		api := &API{
+			config: &conf.Config{StaticRoot: "/path"},
+			Server: echoMock,
+			log:    logrus.WithField("test", "TestRoutes_Index"),
+		}
+
+		Convey("It should call echo file", func() {
+			echoMock.On("File", c, "/path/index.html").Return(nil)
+
+			result := api.index(c)
+
+			So(result, ShouldBeNil)
+			echoMock.AssertExpectations(t)
+		})
+	})
+}

@@ -85,6 +85,11 @@ func (em *EchoServerMock) POST(path string, h echo.HandlerFunc, m ...echo.Middle
 	em.Called(path, h, m)
 }
 
+func (em *EchoServerMock) File(ctx echo.Context, file string) error {
+	args := em.Called(ctx, file)
+	return args.Error(0)
+}
+
 //endregion
 
 //region Echo Group Mock

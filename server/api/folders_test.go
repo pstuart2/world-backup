@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"world-backup/server/conf"
 )
 
 func TestAPI_Folders(t *testing.T) {
@@ -149,6 +150,7 @@ func TestAPI_DeleteWorldBackup(t *testing.T) {
 
 		api := &API{
 			log: logrus.WithField("test", "TestAPI_DeleteWorldBackup"),
+			config: &conf.Config{BackupDir: "/back/up/here"},
 			Db:  mockDb,
 			Fs:  mockFs,
 		}
@@ -180,7 +182,7 @@ func TestAPI_DeleteWorldBackup(t *testing.T) {
 				Worlds:     []*data.World{&w1, &expW2, &w3},
 			}
 
-			fullBackupPath := path.Join(w2.FullPath, b2.Name)
+			fullBackupPath := path.Join(api.config.BackupDir, b2.Name)
 
 			mockDb.On("GetFolder", "jk0069").Return(&f1)
 

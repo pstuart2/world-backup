@@ -15,6 +15,7 @@ type IServer interface {
 	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc)
 	Routes() []echo.Route
 	Static(prefix, root string)
+	File(ctx echo.Context, file string) error
 }
 
 type IEchoGroup interface {
@@ -58,6 +59,10 @@ func (es EchoServer) POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareF
 
 func (es EchoServer) DELETE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) {
 	es.e.POST(path, h, m...)
+}
+
+func (es EchoServer) File(ctx echo.Context, file string) error {
+	return ctx.File(file)
 }
 
 func (es EchoServer) Routes() []echo.Route {
