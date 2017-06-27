@@ -51,6 +51,17 @@ update msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
+        Msgs.RestoreBackup folderId worldId backupId ->
+            ( model, Api.restoreBackup model.flags.apiUrl folderId worldId backupId )
+
+        Msgs.OnBackupRestored folderId worldId backupId result ->
+            case result of
+                Ok _ ->
+                    ( model, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
 
 updateWorlds : Model -> FolderId -> RemoteData.WebData (List World) -> Model
 updateWorlds model folderId updatedWorlds =

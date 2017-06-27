@@ -68,7 +68,7 @@ backupRow model folderId worldId backup =
     tr []
         [ td [ Table.numeric ]
             [ iconButton model "fa fa-remove" (Color.color Color.Red Color.S900) (Msgs.DeleteBackup folderId worldId backup.id)
-            , iconButton model "fa fa-check" (Color.color Color.Green Color.S900) Msgs.DoNothing
+            , iconButton model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.RestoreBackup folderId worldId backup.id)
             ]
         , td [ Table.numeric ] [ text backup.name ]
         , td [] [ text (DateTime.toISO8601 backup.createdAt) ]

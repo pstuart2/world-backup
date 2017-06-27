@@ -21,6 +21,19 @@ delete url =
         }
 
 
+patch : String -> Http.Body -> Http.Request ()
+patch url body =
+    Http.request
+        { method = "PATCH"
+        , headers = []
+        , url = url
+        , body = body
+        , expect = Http.expectStringResponse (\_ -> Ok ())
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
 fetchFolders : String -> Cmd Msg
 fetchFolders baseApiUrl =
     Http.get (Urls.folders baseApiUrl) foldersDecoder
@@ -42,3 +55,12 @@ deleteBackup baseApiUrl folderId worldId backupId =
             delete (Urls.backup baseApiUrl folderId worldId backupId)
     in
     Http.send (Msgs.OnBackupDeleted folderId worldId backupId) request
+
+
+restoreBackup : String -> FolderId -> WorldId -> BackupId -> Cmd Msg
+restoreBackup baseApiUrl folderId worldId backupId =
+    let
+        request =
+            patch (Urls.backup baseApiUrl folderId worldId backupId) Http.emptyBody
+    in
+    Http.send (Msgs.OnBackupRestored folderId worldId backupId) request
