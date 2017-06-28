@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Material
 import Models exposing (Flags, Model, Route, initialModel)
 import Msgs exposing (Msg)
 import Navigation exposing (Location)
@@ -20,7 +21,7 @@ initialCommands apiUrl currentRoute =
     if currentRoute == Models.FoldersRoute then
         folderCommand
     else
-        Cmd.batch [ routeCommand, folderCommand ]
+        Cmd.batch [ Material.init Msgs.Mdl, routeCommand, folderCommand ]
 
 
 init : Flags -> Location -> ( Model, Cmd Msg )
@@ -37,7 +38,7 @@ init flags location =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Material.subscriptions Msgs.Mdl model
 
 
 
