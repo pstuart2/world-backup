@@ -22,6 +22,8 @@ type IApiDb interface {
 type IApiFileSystem interface {
 	Exists(path string) (bool, error)
 	Remove(name string) error
+	Unzip(src, dest string) error
+	Rename(oldname, newname string) error
 }
 
 // API is the data holder for the API

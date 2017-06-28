@@ -37,3 +37,7 @@ func (f *FileSystem) Remove(name string) error {
 func (f *FileSystem) Exists(path string) (bool, error) {
 	return f.af.Exists(path)
 }
+
+func (f *FileSystem) Rename(oldname, newname string) error {
+	return f.af.Rename(oldname, newname)
+}

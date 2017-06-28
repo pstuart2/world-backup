@@ -46,6 +46,16 @@ func (m *ApiFsMock) Remove(name string) error {
 	return args.Error(0)
 }
 
+func (m *ApiFsMock) Unzip(src, dest string) error {
+	args := m.Called(src, dest)
+	return args.Error(0)
+}
+
+func (m *ApiFsMock) Rename(oldname, newname string) error {
+	args := m.Called(oldname, newname)
+	return args.Error(0)
+}
+
 //endregion
 
 //region Echo Mock

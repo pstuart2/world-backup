@@ -9,6 +9,8 @@ import (
 
 	"path"
 
+	"fmt"
+
 	"github.com/labstack/echo"
 )
 
@@ -83,11 +85,33 @@ func (api *API) deleteWorldBackup(ctx echo.Context) error {
 func (api *API) restoreWorldBackup(ctx echo.Context) error {
 	folderId := ctx.Param("id")
 	worldId := ctx.Param("wid")
-	backupId := ctx.Param("wid")
+	backupId := ctx.Param("bid")
 
 	log := getLogger(ctx)
 
 	log.Infof("Restoring backup F: %s W: %s B: %s", folderId, worldId, backupId)
 
-	return nil
+	folder := api.Db.GetFolder(folderId)
+	world := folder.GetWorld(worldId)
+	backup := world.GetBackup(backupId)
+
+	fullBackupPath := path.Join(api.config.BackupDir, backup.Name)
+
+	log.Infof("fullPath: %s", fullBackupPath)
+
+	exists, _ := api.Fs.Exists(fullBackupPath)
+	if exists {
+		now := getNow()
+
+		renameFolder := path.Join(folder.Path, fmt.Sprintf("%s_%d", world.Name, now.Unix()))
+		if err := api.Fs.Rename(world.FullPath, renameFolder); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, nil)
+		}
+
+		if err := api.Fs.Unzip(fullBackupPath, folder.Path); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, nil)
+		}
+	}
+
+	return ctx.JSON(http.StatusOK, world)
 }
