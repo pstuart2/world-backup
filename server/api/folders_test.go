@@ -14,8 +14,9 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 
-	. "github.com/smartystreets/goconvey/convey"
 	"world-backup/server/conf"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestAPI_Folders(t *testing.T) {
@@ -149,10 +150,10 @@ func TestAPI_DeleteWorldBackup(t *testing.T) {
 		mockFs := new(ApiFsMock)
 
 		api := &API{
-			log: logrus.WithField("test", "TestAPI_DeleteWorldBackup"),
+			log:    logrus.WithField("test", "TestAPI_DeleteWorldBackup"),
 			config: &conf.Config{BackupDir: "/back/up/here"},
-			Db:  mockDb,
-			Fs:  mockFs,
+			Db:     mockDb,
+			Fs:     mockFs,
 		}
 
 		Convey("And a world with backups", func() {
@@ -174,13 +175,10 @@ func TestAPI_DeleteWorldBackup(t *testing.T) {
 				Worlds:     []*data.World{&w1, &w2, &w3},
 			}
 
-			expFolder := data.Folder{
-				Id:         "jk0069",
-				Path:       "/this/be/h",
-				ModifiedAt: f1.ModifiedAt,
-				LastRun:    f1.LastRun,
-				Worlds:     []*data.World{&w1, &expW2, &w3},
-			}
+			now := time.Now().Add(time.Second * 20)
+			oldGetNow := getNow
+			getNow = func() time.Time { return now }
+			defer func() { getNow = oldGetNow }()
 
 			fullBackupPath := path.Join(api.config.BackupDir, b2.Name)
 
@@ -192,6 +190,7 @@ func TestAPI_DeleteWorldBackup(t *testing.T) {
 
 				Convey("And call to the Remove succeeds", func() {
 					mockFs.On("Remove", fullBackupPath).Return(nil)
+					mockDb.On("Save").Return(nil)
 
 					Convey("It should return http.StatusOK", func() {
 						resultErr := api.deleteWorldBackup(c)
@@ -204,11 +203,11 @@ func TestAPI_DeleteWorldBackup(t *testing.T) {
 						So(rec.Code, ShouldEqual, http.StatusOK)
 
 						Convey("And the updated folder", func() {
-							var resultFolder data.Folder
-							err := json.Unmarshal(rec.Body.Bytes(), &resultFolder)
+							var resultWorld data.World
+							err := json.Unmarshal(rec.Body.Bytes(), &resultWorld)
 							So(err, ShouldBeNil)
 
-							expectedString, _ := json.Marshal(expFolder)
+							expectedString, _ := json.Marshal(expW2)
 							So(rec.Body.String(), ShouldEqual, string(expectedString))
 
 						})
@@ -234,6 +233,7 @@ func TestAPI_DeleteWorldBackup(t *testing.T) {
 			Convey("When the backup file does not exists", func() {
 
 				mockFs.On("Exists", fullBackupPath).Return(false, nil)
+				mockDb.On("Save").Return(nil)
 
 				Convey("It should return http.StatusOK", func() {
 					resultErr := api.deleteWorldBackup(c)
@@ -246,11 +246,11 @@ func TestAPI_DeleteWorldBackup(t *testing.T) {
 					So(rec.Code, ShouldEqual, http.StatusOK)
 
 					Convey("And the updated folder", func() {
-						var resultFolder data.Folder
-						err := json.Unmarshal(rec.Body.Bytes(), &resultFolder)
+						var resultWorld data.World
+						err := json.Unmarshal(rec.Body.Bytes(), &resultWorld)
 						So(err, ShouldBeNil)
 
-						expectedString, _ := json.Marshal(expFolder)
+						expectedString, _ := json.Marshal(expW2)
 						So(rec.Body.String(), ShouldEqual, string(expectedString))
 
 					})

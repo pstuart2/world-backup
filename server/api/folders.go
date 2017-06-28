@@ -74,7 +74,10 @@ func (api *API) deleteWorldBackup(ctx echo.Context) error {
 	}
 
 	world.RemoveBackup(backupId)
-	return ctx.JSON(http.StatusOK, folder)
+	folder.ModifiedAt = getNow()
+	api.Db.Save()
+
+	return ctx.JSON(http.StatusOK, world)
 }
 
 func (api *API) restoreWorldBackup(ctx echo.Context) error {

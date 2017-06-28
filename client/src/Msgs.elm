@@ -12,7 +12,7 @@ type Msg
     | DoNothing
     | DeleteBackup FolderId WorldId BackupId
     | RestoreBackup FolderId WorldId BackupId
-    | OnBackupDeleted FolderId WorldId BackupId (Result Http.Error ())
+    | OnBackupDeleted FolderId WorldId BackupId (Result Http.Error World)
     | OnBackupRestored FolderId WorldId BackupId (Result Http.Error ())
     | ChangeLocation String
     | GoBack

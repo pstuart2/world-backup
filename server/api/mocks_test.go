@@ -24,6 +24,11 @@ func (m *ApiDbMock) GetFolder(id string) *data.Folder {
 	return args.Get(0).(*data.Folder)
 }
 
+func (m *ApiDbMock) Save() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
 //endregion
 
 //region ApiFs Mock

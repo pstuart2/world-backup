@@ -1,6 +1,8 @@
 package api
 
 import (
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 
@@ -9,9 +11,12 @@ import (
 	"world-backup/server/data"
 )
 
+var getNow = time.Now
+
 type IApiDb interface {
 	Folders() []*data.Folder
 	GetFolder(id string) *data.Folder
+	Save() error
 }
 
 type IApiFileSystem interface {

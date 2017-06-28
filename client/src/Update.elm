@@ -1,6 +1,7 @@
 module Update exposing (..)
 
 import Api
+import Debug exposing (log)
 import Material
 import Models exposing (..)
 import Msgs exposing (Msg)
@@ -45,10 +46,14 @@ update msg model =
 
         Msgs.OnBackupDeleted folderId worldId backupId result ->
             case result of
-                Ok _ ->
-                    ( deleteBackup model folderId worldId backupId, Cmd.none )
+                Ok world ->
+                    ( updateWorld model folderId world, Cmd.none )
 
-                Err _ ->
+                Err world ->
+                    let
+                        x =
+                            Debug.log "error deleting world" world
+                    in
                     ( model, Cmd.none )
 
         Msgs.RestoreBackup folderId worldId backupId ->
@@ -81,15 +86,12 @@ updateWorlds model folderId updatedWorlds =
     { model | folders = updatedFolders }
 
 
-deleteBackup : Model -> FolderId -> WorldId -> BackupId -> Model
-deleteBackup model folderId worldId backupId =
+updateWorld : Model -> FolderId -> World -> Model
+updateWorld model folderId updatedWorld =
     let
-        isNotDeleted currentBackup =
-            backupId /= currentBackup.id
-
         findWorld currentWorld =
-            if worldId == currentWorld.id then
-                { currentWorld | backups = List.filter isNotDeleted currentWorld.backups }
+            if updatedWorld.id == currentWorld.id then
+                updatedWorld
             else
                 currentWorld
 

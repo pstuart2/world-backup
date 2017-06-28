@@ -1,21 +1,22 @@
 module Api exposing (..)
 
-import Commands exposing (foldersDecoder, worldsDecoder)
+import Commands exposing (foldersDecoder, worldDecoder, worldsDecoder)
 import Http
-import Models exposing (BackupId, FolderId, WorldId)
+import Json.Decode as Decode exposing (Decoder)
+import Models exposing (BackupId, Folder, FolderId, WorldId)
 import Msgs exposing (Msg)
 import RemoteData exposing (WebData)
 import Urls
 
 
-delete : String -> Http.Request ()
-delete url =
+delete : String -> Decode.Decoder a -> Http.Request a
+delete url decoder =
     Http.request
         { method = "DELETE"
         , headers = []
         , url = url
         , body = Http.emptyBody
-        , expect = Http.expectStringResponse (\_ -> Ok ())
+        , expect = Http.expectJson decoder
         , timeout = Nothing
         , withCredentials = False
         }
@@ -52,7 +53,7 @@ deleteBackup : String -> FolderId -> WorldId -> BackupId -> Cmd Msg
 deleteBackup baseApiUrl folderId worldId backupId =
     let
         request =
-            delete (Urls.backup baseApiUrl folderId worldId backupId)
+            delete (Urls.backup baseApiUrl folderId worldId backupId) worldDecoder
     in
     Http.send (Msgs.OnBackupDeleted folderId worldId backupId) request
 

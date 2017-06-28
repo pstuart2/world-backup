@@ -4,7 +4,7 @@
     "/home/paul/testWorlds/saves"
   ],
   "backupDir": "/home/paul/testWorlds/backups",
-  "checkInterval": "100m",
+  "checkInterval": "1m",
   "log": {
     "file": "",
     "level": "debug"
