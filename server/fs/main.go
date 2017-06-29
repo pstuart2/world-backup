@@ -34,6 +34,10 @@ func (f *FileSystem) Remove(name string) error {
 	return f.af.Remove(name)
 }
 
+func (f *FileSystem) RemoveAll(name string) error {
+	return f.af.RemoveAll(name)
+}
+
 func (f *FileSystem) Exists(path string) (bool, error) {
 	return f.af.Exists(path)
 }

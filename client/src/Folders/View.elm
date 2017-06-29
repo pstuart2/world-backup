@@ -44,7 +44,8 @@ list model folderId worlds =
 worldSection : Model -> FolderId -> World -> Html Msg
 worldSection model folderId world =
     div []
-        [ h2 [] [ text world.name ]
+        [ div [ class "world-buttons" ] [ deleteButton model "Delete World" (Msgs.DeleteWorld folderId world.id) ]
+        , h2 [] [ text world.name ]
         , backupsTable model folderId world.id world.backups
         ]
 
@@ -85,3 +86,17 @@ iconButton model icon color clickMsg =
         , Options.onClick clickMsg
         ]
         [ i [ class icon ] [] ]
+
+
+deleteButton : Model -> String -> Msg -> Html.Html Msg
+deleteButton model buttonText clickMsg =
+    Button.render Msgs.Mdl
+        [ 0 ]
+        model.mdl
+        [ Button.raised
+        , Button.ripple
+        , Color.text Color.white
+        , Color.background (Color.color Color.Red Color.S300)
+        , Options.onClick clickMsg
+        ]
+        [ text buttonText ]

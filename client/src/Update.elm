@@ -41,6 +41,17 @@ update msg model =
             in
             ( { model | route = newRoute }, newCommand )
 
+        Msgs.DeleteWorld folderId worldId ->
+            ( model, Api.deleteWorld model.flags.apiUrl folderId worldId )
+
+        Msgs.OnWorldDeleted folderId worldId result ->
+            case result of
+                Ok _ ->
+                    ( deleteWorld model folderId worldId, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
         Msgs.DeleteBackup folderId worldId backupId ->
             ( model, Api.deleteBackup model.flags.apiUrl folderId worldId backupId )
 
@@ -97,6 +108,30 @@ updateWorld model folderId updatedWorld =
 
         updateWorldsList worlds =
             List.map findWorld worlds
+
+        findFolder currentFolder =
+            if folderId == currentFolder.id then
+                { currentFolder | worlds = RemoteData.map updateWorldsList currentFolder.worlds }
+            else
+                currentFolder
+
+        updateFolderList folders =
+            List.map findFolder folders
+
+        updatedFolders =
+            RemoteData.map updateFolderList model.folders
+    in
+    { model | folders = updatedFolders }
+
+
+deleteWorld : Model -> FolderId -> WorldId -> Model
+deleteWorld model folderId worldId =
+    let
+        isNotDeleted currentWorld =
+            worldId /= currentWorld.id
+
+        updateWorldsList worlds =
+            List.filter isNotDeleted worlds
 
         findFolder currentFolder =
             if folderId == currentFolder.id then

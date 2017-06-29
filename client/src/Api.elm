@@ -22,6 +22,19 @@ delete url decoder =
         }
 
 
+deleteNoResponse : String -> Http.Request ()
+deleteNoResponse url =
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , url = url
+        , body = Http.emptyBody
+        , expect = Http.expectStringResponse (\_ -> Ok ())
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
 patch : String -> Http.Body -> Http.Request ()
 patch url body =
     Http.request
@@ -47,6 +60,15 @@ fetchFolderWorlds baseApiUrl folderId =
     Http.get (Urls.worlds baseApiUrl folderId) worldsDecoder
         |> RemoteData.sendRequest
         |> Cmd.map (Msgs.OnFetchWorlds folderId)
+
+
+deleteWorld : String -> FolderId -> WorldId -> Cmd Msg
+deleteWorld baseApiUrl folderId worldId =
+    let
+        request =
+            deleteNoResponse (Urls.world baseApiUrl folderId worldId)
+    in
+    Http.send (Msgs.OnWorldDeleted folderId worldId) request
 
 
 deleteBackup : String -> FolderId -> WorldId -> BackupId -> Cmd Msg

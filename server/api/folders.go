@@ -129,7 +129,8 @@ func (api *API) deleteWorld(ctx echo.Context) error {
 	folder := api.Db.GetFolder(folderId)
 	world := folder.GetWorld(worldId)
 
-	if err := api.Fs.Remove(world.FullPath); err != nil {
+	if err := api.Fs.RemoveAll(world.FullPath); err != nil {
+		log.Errorf("Failed to delete: %v", err)
 		return ctx.JSON(http.StatusInternalServerError, nil)
 	}
 

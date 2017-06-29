@@ -46,6 +46,11 @@ func (m *ApiFsMock) Remove(name string) error {
 	return args.Error(0)
 }
 
+func (m *ApiFsMock) RemoveAll(name string) error {
+	args := m.Called(name)
+	return args.Error(0)
+}
+
 func (m *ApiFsMock) Unzip(src, dest string) error {
 	args := m.Called(src, dest)
 	return args.Error(0)

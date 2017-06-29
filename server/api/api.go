@@ -22,6 +22,7 @@ type IApiDb interface {
 type IApiFileSystem interface {
 	Exists(path string) (bool, error)
 	Remove(name string) error
+	RemoveAll(name string) error
 	Unzip(src, dest string) error
 	Rename(oldname, newname string) error
 }

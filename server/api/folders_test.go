@@ -420,7 +420,7 @@ func TestAPI_DeleteWorld(t *testing.T) {
 
 			Convey("When the removal succeeds", func() {
 				mockDb.On("Save").Return(nil)
-				mockFs.On("Remove", w2.FullPath).Return(nil)
+				mockFs.On("RemoveAll", w2.FullPath).Return(nil)
 
 				resultErr := api.deleteWorld(c)
 				So(resultErr, ShouldBeNil)
@@ -435,6 +435,20 @@ func TestAPI_DeleteWorld(t *testing.T) {
 
 						So(rec.Code, ShouldEqual, http.StatusOK)
 					})
+				})
+			})
+
+			Convey("When the removal fails", func() {
+				mockFs.On("RemoveAll", w2.FullPath).Return(errors.New("There was a problem!"))
+
+				resultErr := api.deleteWorld(c)
+				So(resultErr, ShouldBeNil)
+
+				Convey("And return http.StatusInternalServerError", func() {
+					mockDb.AssertExpectations(t)
+					mockFs.AssertExpectations(t)
+
+					So(rec.Code, ShouldEqual, http.StatusInternalServerError)
 				})
 			})
 
