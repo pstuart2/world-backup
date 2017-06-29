@@ -322,6 +322,7 @@ func TestAPI_RestoreWorldBackup(t *testing.T) {
 
 					Convey("And the call to unzip succeeds", func() {
 						mockFs.On("Unzip", fullBackupPath, f1.Path).Return(nil)
+						mockDb.On("Save").Return(nil)
 
 						Convey("It should return http.StatusOK", func() {
 							resultErr := api.restoreWorldBackup(c)
@@ -376,6 +377,67 @@ func TestAPI_RestoreWorldBackup(t *testing.T) {
 					})
 				})
 			})
+		})
+	})
+}
+
+func TestAPI_DeleteWorld(t *testing.T) {
+	Convey("Given an api and a context", t, func() {
+		e := echo.New()
+		req, _ := http.NewRequest(echo.PATCH, "/api/folders/jk0069/worlds/wid999", strings.NewReader(""))
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetParamNames("id", "wid")
+		c.SetParamValues("jk0069", "wid999")
+
+		mockDb := new(ApiDbMock)
+		mockFs := new(ApiFsMock)
+
+		api := &API{
+			log:    logrus.WithField("test", "TestAPI_DeleteWorldBackup"),
+			config: &conf.Config{BackupDir: "/back/up/here"},
+			Db:     mockDb,
+			Fs:     mockFs,
+		}
+
+		Convey("And a folder with a world", func() {
+			w1 := data.World{Id: "w1", Name: "Something cool 1"}
+			w2 := data.World{Id: "wid999", Name: "Something cool 2", FullPath: "/this/be/h/w1"}
+			w3 := data.World{Id: "w3", Name: "Something cool 3"}
+
+			f1 := data.Folder{
+				Id:         "jk0069",
+				Path:       "/this/be/h",
+				ModifiedAt: time.Now(),
+				LastRun:    time.Now(),
+				Worlds:     []*data.World{&w1, &w2, &w3},
+			}
+
+			mockDb.On("GetFolder", "jk0069").Return(&f1)
+
+			Convey("When the removal succeeds", func() {
+				mockDb.On("Save").Return(nil)
+				mockFs.On("Remove", w2.FullPath).Return(nil)
+
+				resultErr := api.deleteWorld(c)
+				So(resultErr, ShouldBeNil)
+
+				Convey("It should remove the world from the folder", func() {
+					So(len(f1.Worlds), ShouldEqual, 2)
+					So(f1.GetWorld("wid999"), ShouldBeNil)
+
+					Convey("And return http.StatusOK", func() {
+						mockDb.AssertExpectations(t)
+						mockFs.AssertExpectations(t)
+
+						So(rec.Code, ShouldEqual, http.StatusOK)
+					})
+				})
+			})
+
 		})
 	})
 }

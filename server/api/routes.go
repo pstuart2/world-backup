@@ -24,6 +24,7 @@ func (api *API) SetUpRoutes() {
 	apiGroup := api.Server.Group("/api")
 	apiGroup.GET("/folders", api.getFolders)
 	apiGroup.GET("/folders/:id/worlds", api.getWorlds)
+	apiGroup.DELETE("/folders/:id/worlds/:wid", api.deleteWorld)
 	apiGroup.DELETE("/folders/:id/worlds/:wid/backups/:bid", api.deleteWorldBackup)
 	apiGroup.PATCH("/folders/:id/worlds/:wid/backups/:bid", api.restoreWorldBackup)
 

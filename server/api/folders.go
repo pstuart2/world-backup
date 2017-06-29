@@ -113,5 +113,28 @@ func (api *API) restoreWorldBackup(ctx echo.Context) error {
 		}
 	}
 
+	folder.ModifiedAt = getNow()
+	api.Db.Save()
 	return ctx.JSON(http.StatusOK, world)
+}
+
+func (api *API) deleteWorld(ctx echo.Context) error {
+	folderId := ctx.Param("id")
+	worldId := ctx.Param("wid")
+
+	log := getLogger(ctx)
+
+	log.Infof("Deleting world F: %s W: %s", folderId, worldId)
+
+	folder := api.Db.GetFolder(folderId)
+	world := folder.GetWorld(worldId)
+
+	if err := api.Fs.Remove(world.FullPath); err != nil {
+		return ctx.JSON(http.StatusInternalServerError, nil)
+	}
+
+	folder.RemoveWorld(worldId)
+	api.Db.Save()
+
+	return ctx.JSON(http.StatusOK, nil)
 }

@@ -33,6 +33,9 @@ func TestSetUpRoutes(t *testing.T) {
 
 		groupMock.On("GET", "/folders", mock.Anything, mock.Anything).Once()
 		groupMock.On("GET", "/folders/:id/worlds", mock.Anything, mock.Anything).Once()
+
+		groupMock.On("DELETE", "/folders/:id/worlds/:wid", mock.Anything, mock.Anything).Once()
+
 		groupMock.On("DELETE", "/folders/:id/worlds/:wid/backups/:bid", mock.Anything, mock.Anything).Once()
 		groupMock.On("PATCH", "/folders/:id/worlds/:wid/backups/:bid", mock.Anything, mock.Anything).Once()
 
@@ -50,17 +53,22 @@ func TestSetUpRoutes(t *testing.T) {
 			So(echoMock.Calls[3].Arguments.Get(0), ShouldEqual, "*")
 			So(echoMock.Calls[3].Arguments.Get(1), ShouldEqual, api.index)
 
-			So(groupMock.Calls[0].Arguments.Get(0), ShouldEqual, "/folders")
-			So(groupMock.Calls[0].Arguments.Get(1), ShouldEqual, api.getFolders)
+			var testGroupRoute = func(i int, r string, f func(ctx echo.Context) error) {
+				So(groupMock.Calls[i].Arguments.Get(0), ShouldEqual, r)
+				So(groupMock.Calls[i].Arguments.Get(1), ShouldEqual, f)
+			}
 
-			So(groupMock.Calls[1].Arguments.Get(0), ShouldEqual, "/folders/:id/worlds")
-			So(groupMock.Calls[1].Arguments.Get(1), ShouldEqual, api.getWorlds)
+			i := 0
+			testGroupRoute(i, "/folders", api.getFolders)
+			i++
+			testGroupRoute(i, "/folders/:id/worlds", api.getWorlds)
+			i++
+			testGroupRoute(i, "/folders/:id/worlds/:wid", api.deleteWorld)
+			i++
+			testGroupRoute(i, "/folders/:id/worlds/:wid/backups/:bid", api.deleteWorldBackup)
+			i++
+			testGroupRoute(i, "/folders/:id/worlds/:wid/backups/:bid", api.restoreWorldBackup)
 
-			So(groupMock.Calls[2].Arguments.Get(0), ShouldEqual, "/folders/:id/worlds/:wid/backups/:bid")
-			So(groupMock.Calls[2].Arguments.Get(1), ShouldEqual, api.deleteWorldBackup)
-
-			So(groupMock.Calls[3].Arguments.Get(0), ShouldEqual, "/folders/:id/worlds/:wid/backups/:bid")
-			So(groupMock.Calls[3].Arguments.Get(1), ShouldEqual, api.restoreWorldBackup)
 		})
 
 	})

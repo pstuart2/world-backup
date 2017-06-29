@@ -47,6 +47,17 @@ func (f *Folder) GetWorldByName(name string) *World {
 	return nil
 }
 
+func (f *Folder) RemoveWorld(id string)  {
+	for i := range f.Worlds {
+		if f.Worlds[i].Id == id {
+			copy(f.Worlds[i:], f.Worlds[i+1:])
+			f.Worlds[len(f.Worlds)-1] = nil
+			f.Worlds = f.Worlds[:len(f.Worlds)-1]
+			break
+		}
+	}
+}
+
 func (db *Db) AddFolder(path string) *Folder {
 	now := getNow()
 

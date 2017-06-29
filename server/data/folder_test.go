@@ -186,3 +186,40 @@ func TestFolder_FolderById(t *testing.T) {
 		})
 	})
 }
+
+func TestFolder_RemoveWorld(t *testing.T) {
+	Convey("Given a folder with some worlds", t, func() {
+		folder := Folder{}
+		w1 := folder.AddWorld("World Numeral 01")
+		folder.AddWorld("World Numeral 02")
+		w3 := folder.AddWorld("World Numeral 03")
+		w4 := folder.AddWorld("World Numeral 04")
+
+		Convey("When the first world is removed from the folder", func() {
+			Convey("It should no longer be there", func() {
+				folder.RemoveWorld(w1.Id)
+
+				So(len(folder.Worlds), ShouldEqual, 3)
+				So(folder.GetWorld(w1.Id), ShouldBeNil)
+			})
+		})
+
+		Convey("When a world is removed from the folder", func() {
+			Convey("It should no longer be there", func() {
+				folder.RemoveWorld(w3.Id)
+
+				So(len(folder.Worlds), ShouldEqual, 3)
+				So(folder.GetWorld(w3.Id), ShouldBeNil)
+			})
+		})
+
+		Convey("When the last world is removed from the folder", func() {
+			Convey("It should no longer be there", func() {
+				folder.RemoveWorld(w4.Id)
+
+				So(len(folder.Worlds), ShouldEqual, 3)
+				So(folder.GetWorld(w4.Id), ShouldBeNil)
+			})
+		})
+	})
+}
