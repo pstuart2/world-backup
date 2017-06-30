@@ -37,21 +37,29 @@ maybeList model folderId response =
 
 list : Model -> FolderId -> List World -> Html Msg
 list model folderId worlds =
+    let
+        viewWorld id world =
+            worldSection id model folderId world
+    in
     div [ class "grid-outer" ]
-        (List.map (worldSection model folderId) worlds)
+        (List.indexedMap viewWorld worlds)
 
 
-worldSection : Model -> FolderId -> World -> Html Msg
-worldSection model folderId world =
+worldSection : Int -> Model -> FolderId -> World -> Html Msg
+worldSection iWorld model folderId world =
     div []
-        [ div [ class "world-buttons" ] [ deleteButton model "Delete World" (Msgs.DeleteWorld folderId world.id) ]
+        [ div [ class "world-buttons" ] [ deleteButton [ iWorld ] model "Delete World" (Msgs.DeleteWorld folderId world.id) ]
         , h2 [] [ text world.name ]
-        , backupsTable model folderId world.id world.backups
+        , backupsTable iWorld model folderId world.id world.backups
         ]
 
 
-backupsTable : Model -> FolderId -> WorldId -> List Backup -> Html Msg
-backupsTable model folderId worldId backups =
+backupsTable : Int -> Model -> FolderId -> WorldId -> List Backup -> Html Msg
+backupsTable iWorld model folderId worldId backups =
+    let
+        viewBackup id backup =
+            backupRow [ iWorld, id ] model folderId worldId backup
+    in
     table [ Options.css "width" "100%" ]
         [ thead []
             [ tr []
@@ -60,26 +68,26 @@ backupsTable model folderId worldId backups =
                 , th [] [ text "Created At" ]
                 ]
             ]
-        , tbody [] (List.map (backupRow model folderId worldId) backups)
+        , tbody [] (List.indexedMap viewBackup backups)
         ]
 
 
-backupRow : Model -> FolderId -> WorldId -> Backup -> Html Msg
-backupRow model folderId worldId backup =
+backupRow : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
+backupRow idx model folderId worldId backup =
     tr []
         [ td [ Table.numeric ]
-            [ iconButton model "fa fa-remove" (Color.color Color.Red Color.S900) (Msgs.DeleteBackup folderId worldId backup.id)
-            , iconButton model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.RestoreBackup folderId worldId backup.id)
+            [ iconButton idx model "fa fa-remove" (Color.color Color.Red Color.S900) (Msgs.DeleteBackup folderId worldId backup.id)
+            , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.RestoreBackup folderId worldId backup.id)
             ]
         , td [ Table.numeric ] [ text backup.name ]
         , td [] [ text (DateTime.toISO8601 backup.createdAt) ]
         ]
 
 
-iconButton : Model -> IconClass -> Color.Color -> Msg -> Html.Html Msg
-iconButton model icon color clickMsg =
+iconButton : List Int -> Model -> IconClass -> Color.Color -> Msg -> Html.Html Msg
+iconButton idx model icon color clickMsg =
     Button.render Msgs.Mdl
-        [ 0 ]
+        (List.append [ 0 ] idx)
         model.mdl
         [ Button.icon
         , Color.text color
@@ -88,10 +96,10 @@ iconButton model icon color clickMsg =
         [ i [ class icon ] [] ]
 
 
-deleteButton : Model -> String -> Msg -> Html.Html Msg
-deleteButton model buttonText clickMsg =
+deleteButton : List Int -> Model -> String -> Msg -> Html.Html Msg
+deleteButton idx model buttonText clickMsg =
     Button.render Msgs.Mdl
-        [ 0 ]
+        (List.append [ 1 ] idx)
         model.mdl
         [ Button.raised
         , Button.ripple

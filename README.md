@@ -5,4 +5,3 @@ also use as a chance to try out Elm
 
 # Todo
 * Add confirmation before delete / restore
-* Why does the ripple effect happen on all buttons?
