@@ -78,6 +78,9 @@ update msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
+        Msgs.FilterWorlds filter ->
+            ( { model | worldFilter = filter }, Cmd.none )
+
 
 updateWorlds : Model -> FolderId -> RemoteData.WebData (List World) -> Model
 updateWorlds model folderId updatedWorlds =

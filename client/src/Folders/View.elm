@@ -6,6 +6,7 @@ import Material.Button as Button
 import Material.Color as Color
 import Material.Options as Options
 import Material.Table as Table exposing (table, tbody, td, th, thead, tr)
+import Material.Textfield as Textfield
 import Models exposing (..)
 import Msgs exposing (Msg)
 import RemoteData
@@ -40,9 +41,18 @@ list model folderId worlds =
     let
         viewWorld id world =
             worldSection id model folderId world
+
+        worldFilter world =
+            String.contains model.worldFilter world.name
+
+        filteredWorlds =
+            List.filter worldFilter worlds
     in
-    div [ class "grid-outer" ]
-        (List.indexedMap viewWorld worlds)
+    div []
+        [ div [ class "search-box" ] [ searchField model Msgs.FilterWorlds ]
+        , div [ class "grid-outer" ]
+            (List.indexedMap viewWorld filteredWorlds)
+        ]
 
 
 worldSection : Int -> Model -> FolderId -> World -> Html Msg
@@ -108,3 +118,17 @@ deleteButton idx model buttonText clickMsg =
         , Options.onClick clickMsg
         ]
         [ text buttonText ]
+
+
+searchField : Model -> (String -> Msg) -> Html.Html Msg
+searchField model msg =
+    Textfield.render Msgs.Mdl
+        [ 7 ]
+        model.mdl
+        [ Textfield.label "Search"
+        , Textfield.floatingLabel
+        , Textfield.expandable "id-of-expandable-1"
+        , Textfield.expandableIcon "search"
+        , Options.onInput msg
+        ]
+        []

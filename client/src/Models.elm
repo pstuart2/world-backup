@@ -20,6 +20,7 @@ type alias Model =
     { flags : Flags
     , mdl : Material.Model
     , folders : WebData (List Folder)
+    , worldFilter : String
     , route : Route
     }
 
@@ -29,6 +30,7 @@ initialModel flags route =
     { flags = flags
     , mdl = Material.model
     , folders = RemoteData.Loading
+    , worldFilter = ""
     , route = route
     }
 
