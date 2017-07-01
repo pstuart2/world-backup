@@ -35,6 +35,7 @@ func TestSetUpRoutes(t *testing.T) {
 		groupMock.On("GET", "/folders/:id/worlds", mock.Anything, mock.Anything).Once()
 
 		groupMock.On("DELETE", "/folders/:id/worlds/:wid", mock.Anything, mock.Anything).Once()
+		groupMock.On("POST", "/folders/:id/worlds/:wid", mock.Anything, mock.Anything).Once()
 
 		groupMock.On("DELETE", "/folders/:id/worlds/:wid/backups/:bid", mock.Anything, mock.Anything).Once()
 		groupMock.On("PATCH", "/folders/:id/worlds/:wid/backups/:bid", mock.Anything, mock.Anything).Once()
@@ -64,6 +65,8 @@ func TestSetUpRoutes(t *testing.T) {
 			testGroupRoute(i, "/folders/:id/worlds", api.getWorlds)
 			i++
 			testGroupRoute(i, "/folders/:id/worlds/:wid", api.deleteWorld)
+			i++
+			testGroupRoute(i, "/folders/:id/worlds/:wid", api.backupWorld)
 			i++
 			testGroupRoute(i, "/folders/:id/worlds/:wid/backups/:bid", api.deleteWorldBackup)
 			i++

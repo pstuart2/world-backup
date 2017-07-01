@@ -25,6 +25,9 @@ type IApiFileSystem interface {
 	RemoveAll(name string) error
 	Unzip(src, dest string) error
 	Rename(oldname, newname string) error
+	Getwd() (dir string, err error)
+	Chdir(dir string) error
+	Zip(source, target string) error
 }
 
 // API is the data holder for the API

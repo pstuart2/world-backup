@@ -10,9 +10,9 @@ import (
 
 	"os"
 
-	"regexp"
-
 	"errors"
+
+	"world-backup/server/fs"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -163,22 +163,12 @@ var hasChangedFiles = func(log *logrus.Entry, fs IFileSystem, world *data.World)
 var createBackup = func(w *Watcher, log *logrus.Entry, f *data.Folder, world *data.World) {
 	t := getNow()
 
-	currentDir, dErr := w.fs.Getwd()
-	if dErr != nil {
-		log.Errorf("Failed to change workind dir: %v", dErr)
-		return
-	}
-	defer func() { w.fs.Chdir(currentDir) }()
-	w.fs.Chdir(f.Path)
-
-	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
-	cleanWorldName := reg.ReplaceAllString(world.Name, "_")
+	cleanWorldName := fs.CleanName(world.Name)
 
 	zipName := fmt.Sprintf("%s-%s-%s.zip", cleanWorldName, world.Id, t.Format("20060102T150405"))
-	zipFullPath := fmt.Sprintf("%s%s%s", w.config.BackupDir, afero.FilePathSeparator, zipName)
 
 	log.Infof("Creating backup file %s", zipName)
-	if err := w.fs.Zip(world.Name, zipFullPath); err != nil {
+	if err := fs.CreateBackup(w.fs, log, f.Path, world.Name, w.config.BackupDir, zipName); err != nil {
 		log.Errorf("Failed to  create zip: %s, %v", zipName, err)
 		return
 	}

@@ -11,6 +11,8 @@ import (
 
 	"fmt"
 
+	"world-backup/server/fs"
+
 	"github.com/labstack/echo"
 )
 
@@ -138,4 +140,32 @@ func (api *API) deleteWorld(ctx echo.Context) error {
 	api.Db.Save()
 
 	return ctx.JSON(http.StatusOK, nil)
+}
+
+type backupWorldRequest struct {
+	Name string `json:"name"`
+}
+
+func (api *API) backupWorld(ctx echo.Context) error {
+	r := new(backupWorldRequest)
+	if err := ctx.Bind(r); err != nil {
+		return ctx.JSON(http.StatusInternalServerError, nil)
+	}
+
+	folderId := ctx.Param("id")
+	worldId := ctx.Param("wid")
+
+	log := getLogger(ctx)
+
+	log.Infof("Backing up world F: %s W: %s", folderId, worldId)
+
+	folder := api.Db.GetFolder(folderId)
+	world := folder.GetWorld(worldId)
+
+	t := getNow()
+
+	backupName := fmt.Sprintf("%s-%s.zip", fs.CleanName(r.Name), t.Format("20060102T150405"))
+
+	fs.CreateBackup(api.Fs, log, folder.Path, world.Name, api.config.BackupDir, backupName)
+	return nil
 }

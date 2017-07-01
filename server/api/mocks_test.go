@@ -61,6 +61,21 @@ func (m *ApiFsMock) Rename(oldname, newname string) error {
 	return args.Error(0)
 }
 
+func (m *ApiFsMock) Chdir(dir string) error {
+	args := m.Called(dir)
+	return args.Error(0)
+}
+
+func (m *ApiFsMock) Getwd() (dir string, err error) {
+	args := m.Called()
+	return args.String(0), args.Error(1)
+}
+
+func (m *ApiFsMock) Zip(source, target string) error {
+	args := m.Called(source, target)
+	return args.Error(0)
+}
+
 //endregion
 
 //region Echo Mock

@@ -18,6 +18,8 @@ import (
 
 	"fmt"
 
+	"world-backup/server/fs"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -452,6 +454,121 @@ func TestAPI_DeleteWorld(t *testing.T) {
 				})
 			})
 
+		})
+	})
+}
+
+func TestAPI_BackupWorld(t *testing.T) {
+	Convey("Given an api and a context", t, func() {
+		Convey("With a valid request", func() {
+
+			requestPayload := &backupWorldRequest{
+				Name: "Backup NameHere!",
+			}
+
+			requestPayloadJson, _ := json.Marshal(requestPayload)
+
+			e := echo.New()
+			req, _ := http.NewRequest(echo.POST, "/api/folders/jk0069/worlds/wid999", strings.NewReader(string(requestPayloadJson)))
+			req.Header.Set("Content-Type", "application/json")
+
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+
+			c.SetParamNames("id", "wid")
+			c.SetParamValues("jk0069", "wid999")
+
+			mockDb := new(ApiDbMock)
+			mockFs := new(ApiFsMock)
+
+			api := &API{
+				log:    logrus.WithField("test", "TestAPI_BackupWorld"),
+				config: &conf.Config{BackupDir: "/back/up/here"},
+				Db:     mockDb,
+				Fs:     mockFs,
+			}
+
+			now := time.Unix(1495807405, 0)
+			oldGetNow := getNow
+			getNow = func() time.Time { return now }
+			defer func() { getNow = oldGetNow }()
+
+			Convey("And a folder with a world", func() {
+				w1 := data.World{Id: "w1", Name: "Something cool 1"}
+				w2 := data.World{Id: "wid999", Name: "Something cool 2", FullPath: "/this/be/h/w1"}
+				w3 := data.World{Id: "w3", Name: "Something cool 3"}
+
+				f1 := data.Folder{
+					Id:         "jk0069",
+					Path:       "/this/be/h",
+					ModifiedAt: time.Now(),
+					LastRun:    time.Now(),
+					Worlds:     []*data.World{&w1, &w2, &w3},
+				}
+
+				mockDb.On("GetFolder", "jk0069").Return(&f1)
+
+				wasCalled := false
+
+				origCreateBackup := fs.CreateBackup
+				fs.CreateBackup = func(f fs.IBackupFs, log *logrus.Entry, folderPath string, worldName string, backupDir string, backupName string) error {
+					wasCalled = true
+
+					So(f, ShouldEqual, mockFs)
+					So(folderPath, ShouldEqual, f1.Path)
+					So(worldName, ShouldEqual, w2.Name)
+					So(backupDir, ShouldEqual, api.config.BackupDir)
+					So(backupName, ShouldEqual, "Backup_NameHere_-20170526T090325.zip")
+
+					return nil
+				}
+				defer func() { fs.CreateBackup = origCreateBackup }()
+
+				Convey("It should call fs.CreateBackup", func() {
+					resultErr := api.backupWorld(c)
+					So(resultErr, ShouldBeNil)
+
+					So(wasCalled, ShouldBeTrue)
+
+					Convey("And return http.StatusOK", func() {
+
+						So(rec.Code, ShouldEqual, http.StatusOK)
+					})
+				})
+			})
+		})
+
+		Convey("With an invalid request", func() {
+			e := echo.New()
+			req, _ := http.NewRequest(echo.POST, "/api/folders/jk0069/worlds/wid999", strings.NewReader(""))
+			req.Header.Set("Content-Type", "application/json")
+
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+
+			c.SetParamNames("id", "wid")
+			c.SetParamValues("jk0069", "wid999")
+
+			mockDb := new(ApiDbMock)
+			mockFs := new(ApiFsMock)
+
+			api := &API{
+				log:    logrus.WithField("test", "TestAPI_BackupWorld"),
+				config: &conf.Config{BackupDir: "/back/up/here"},
+				Db:     mockDb,
+				Fs:     mockFs,
+			}
+
+			err := api.backupWorld(c)
+
+			Convey("It should not return an error", func() {
+				So(err, ShouldBeNil)
+
+				Convey("And return http.StatusInternalServerError", func() {
+
+					So(rec.Code, ShouldEqual, http.StatusInternalServerError)
+				})
+			})
 		})
 	})
 }
