@@ -58,7 +58,10 @@ list model folderId worlds =
 worldSection : Int -> Model -> FolderId -> World -> Html Msg
 worldSection iWorld model folderId world =
     div []
-        [ div [ class "world-buttons" ] [ deleteButton [ iWorld ] model "Delete World" (Msgs.DeleteWorld folderId world.id) ]
+        [ div [ class "world-buttons" ]
+            [ backupButton [ iWorld ] model Msgs.DoNothing
+            , deleteButton [ iWorld ] model (Msgs.DeleteWorld folderId world.id)
+            ]
         , h2 [] [ text world.name ]
         , backupsTable iWorld model folderId world.id world.backups
         ]
@@ -106,8 +109,8 @@ iconButton idx model icon color clickMsg =
         [ i [ class icon ] [] ]
 
 
-deleteButton : List Int -> Model -> String -> Msg -> Html.Html Msg
-deleteButton idx model buttonText clickMsg =
+deleteButton : List Int -> Model -> Msg -> Html.Html Msg
+deleteButton idx model clickMsg =
     Button.render Msgs.Mdl
         (List.append [ 1 ] idx)
         model.mdl
@@ -117,7 +120,20 @@ deleteButton idx model buttonText clickMsg =
         , Color.background (Color.color Color.Red Color.S300)
         , Options.onClick clickMsg
         ]
-        [ text buttonText ]
+        [ text "Delete" ]
+
+
+backupButton : List Int -> Model -> Msg -> Html.Html Msg
+backupButton idx model clickMsg =
+    Button.render Msgs.Mdl
+        (List.append [ 2 ] idx)
+        model.mdl
+        [ Button.ripple
+        , Button.colored
+        , Button.raised
+        , Options.onClick clickMsg
+        ]
+        [ text "Backup" ]
 
 
 searchField : Model -> (String -> Msg) -> Html.Html Msg
