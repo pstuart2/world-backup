@@ -8,6 +8,7 @@ import Msgs exposing (Msg)
 import Navigation exposing (back, newUrl)
 import RemoteData
 import Routing exposing (getLocationCommand, parseLocation)
+import Task
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -84,7 +85,7 @@ update msg model =
         Msgs.OnWorldBackedUp folderId worldId result ->
             case result of
                 Ok world ->
-                    ( updateWorld model folderId world, Cmd.none )
+                    ( updateWorld model folderId world, sendMessage Msgs.CancelWorldBackup )
 
                 Err world ->
                     let
@@ -95,6 +96,31 @@ update msg model =
 
         Msgs.FilterWorlds filter ->
             ( { model | worldFilter = filter }, Cmd.none )
+
+        Msgs.StartWorldBackup worldId ->
+            ( { model | folderView = setCreateBackupId (Just worldId) model.folderView }, Cmd.none )
+
+        Msgs.UpdateBackupName name ->
+            ( { model | folderView = setCreateBackupName name model.folderView }, Cmd.none )
+
+        Msgs.CancelWorldBackup ->
+            ( { model | folderView = setCreateBackupId Nothing model.folderView }, Cmd.none )
+
+
+sendMessage : msg -> Cmd msg
+sendMessage msg =
+    Task.succeed msg
+        |> Task.perform identity
+
+
+setCreateBackupId : Maybe WorldId -> FolderView -> FolderView
+setCreateBackupId worldId oldFv =
+    { oldFv | createBackupId = worldId, backupName = "" }
+
+
+setCreateBackupName : String -> FolderView -> FolderView
+setCreateBackupName name oldFv =
+    { oldFv | backupName = name }
 
 
 updateWorlds : Model -> FolderId -> RemoteData.WebData (List World) -> Model

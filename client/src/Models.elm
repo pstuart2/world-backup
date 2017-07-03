@@ -22,6 +22,7 @@ type alias Model =
     , folders : WebData (List Folder)
     , worldFilter : String
     , route : Route
+    , folderView : FolderView
     }
 
 
@@ -32,6 +33,16 @@ initialModel flags route =
     , folders = RemoteData.Loading
     , worldFilter = ""
     , route = route
+    , folderView =
+        { createBackupId = Nothing
+        , backupName = ""
+        }
+    }
+
+
+type alias FolderView =
+    { createBackupId : Maybe WorldId
+    , backupName : String
     }
 
 
@@ -62,7 +73,7 @@ type alias Folder =
 
 
 type alias World =
-    { id : String
+    { id : WorldId
     , name : String
     , backups : List Backup
     }

@@ -25,7 +25,7 @@ delete url decoder =
 post : String -> Http.Body -> Decode.Decoder a -> Http.Request a
 post url body decoder =
     Http.request
-        { method = "DELETE"
+        { method = "POST"
         , headers = []
         , url = url
         , body = body

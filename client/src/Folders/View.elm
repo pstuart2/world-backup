@@ -1,7 +1,7 @@
 module Folders.View exposing (view)
 
 import Html exposing (Html, div, h2, i, text)
-import Html.Attributes exposing (class, href, value)
+import Html.Attributes exposing (class, href, style, value)
 import Material.Button as Button
 import Material.Color as Color
 import Material.Options as Options
@@ -57,12 +57,22 @@ list model folderId worlds =
 
 worldSection : Int -> Model -> FolderId -> World -> Html Msg
 worldSection iWorld model folderId world =
+    let
+        confirmContent =
+            if model.folderView.createBackupId == Just world.id then
+                backupConfirm [ iWorld ] model folderId world.id
+            else
+                text ""
+    in
     div []
         [ div [ class "world-buttons" ]
-            [ backupButton [ iWorld ] model Msgs.DoNothing
+            [ backupButton [ iWorld ] model (Msgs.StartWorldBackup world.id)
             , deleteButton [ iWorld ] model (Msgs.DeleteWorld folderId world.id)
             ]
         , h2 [] [ text world.name ]
+        , div
+            [ class "create-backup-confirm" ]
+            [ confirmContent ]
         , backupsTable iWorld model folderId world.id world.backups
         ]
 
@@ -148,3 +158,25 @@ searchField model msg =
         , Options.onInput msg
         ]
         []
+
+
+backupNameField : List Int -> Model -> Html.Html Msg
+backupNameField idx model =
+    Textfield.render Msgs.Mdl
+        (List.append [ 8 ] idx)
+        model.mdl
+        [ Textfield.label "Backup Name"
+        , Textfield.floatingLabel
+        , Textfield.value model.folderView.backupName
+        , Options.onInput Msgs.UpdateBackupName
+        ]
+        []
+
+
+backupConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
+backupConfirm idx model folderId worldId =
+    div []
+        [ backupNameField idx model
+        , iconButton idx model "fa fa-remove" (Color.color Color.Red Color.S900) Msgs.CancelWorldBackup
+        , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.BackupWorld folderId worldId model.folderView.backupName)
+        ]

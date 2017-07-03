@@ -24,3 +24,6 @@ type Msg
     | OnLocationChange Location
     | BackupWorld FolderId WorldId String
     | OnWorldBackedUp FolderId WorldId (Result Http.Error World)
+    | StartWorldBackup WorldId
+    | UpdateBackupName String
+    | CancelWorldBackup
