@@ -33,10 +33,7 @@ initialModel flags route =
     , folders = RemoteData.Loading
     , worldFilter = ""
     , route = route
-    , folderView =
-        { createBackupId = Nothing
-        , backupName = ""
-        }
+    , folderView = FolderView Nothing ""
     }
 
 

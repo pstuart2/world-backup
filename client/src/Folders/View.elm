@@ -63,6 +63,12 @@ worldSection iWorld model folderId world =
                 backupConfirm [ iWorld ] model folderId world.id
             else
                 text ""
+
+        reverseCreatedAt a b =
+            DateTime.compare b.createdAt a.createdAt
+
+        sortedBackups =
+            List.sortWith reverseCreatedAt world.backups
     in
     div []
         [ div [ class "world-buttons" ]
@@ -73,7 +79,7 @@ worldSection iWorld model folderId world =
         , div
             [ class "create-backup-confirm" ]
             [ confirmContent ]
-        , backupsTable iWorld model folderId world.id world.backups
+        , backupsTable iWorld model folderId world.id sortedBackups
         ]
 
 
@@ -88,7 +94,7 @@ backupsTable iWorld model folderId worldId backups =
             [ tr []
                 [ th [ Table.numeric ] [ text "Actions" ]
                 , th [ Table.numeric ] [ text "Name" ]
-                , th [] [ text "Created At" ]
+                , th [ Table.descending ] [ text "Created At" ]
                 ]
             ]
         , tbody [] (List.indexedMap viewBackup backups)
