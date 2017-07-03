@@ -124,12 +124,12 @@ sendMessage msg =
 
 setDeleteWorldId : Maybe WorldId -> FolderView -> FolderView
 setDeleteWorldId worldId oldFv =
-    { oldFv | deleteWorldId = worldId, backupName = "" }
+    { oldFv | deleteWorldId = worldId, createBackupId = Nothing, backupName = "" }
 
 
 setCreateBackupId : Maybe WorldId -> FolderView -> FolderView
 setCreateBackupId worldId oldFv =
-    { oldFv | createBackupId = worldId, backupName = "" }
+    { oldFv | createBackupId = worldId, deleteWorldId = Nothing, backupName = "" }
 
 
 setCreateBackupName : String -> FolderView -> FolderView

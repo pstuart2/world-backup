@@ -4,6 +4,7 @@ import Html exposing (Html, div, h2, h4, i, text)
 import Html.Attributes exposing (class, href, style, value)
 import Material.Button as Button
 import Material.Color as Color
+import Material.Elevation as Elevation
 import Material.Grid as Grid exposing (Align(..), Device(..), align, cell, grid, size)
 import Material.Options as Options
 import Material.Table as Table exposing (table, tbody, td, th, thead, tr)
@@ -204,25 +205,48 @@ backupNameField idx model =
         []
 
 
+inlineInfo : Html.Html Msg -> Html.Html Msg
+inlineInfo content =
+    Options.div
+        [ Elevation.e2
+        , Color.background (Color.color Color.Blue Color.S50)
+        ]
+        [ content ]
+
+
 backupConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
 backupConfirm idx model folderId worldId =
-    grid []
-        [ cell [ size Desktop 11, size Tablet 8, size Phone 4 ]
-            [ backupNameField idx model ]
-        , cell [ size Desktop 1, size Tablet 8, size Phone 4, align Middle ]
-            [ iconButton idx model "fa fa-times" (Color.color Color.Grey Color.S400) Msgs.CancelWorldBackup
-            , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.BackupWorld folderId worldId model.folderView.backupName)
+    inlineInfo
+        (grid []
+            [ cell [ size Desktop 11, size Tablet 8, size Phone 4 ]
+                [ backupNameField idx model ]
+            , cell [ size Desktop 1, size Tablet 8, size Phone 4, align Middle ]
+                [ iconButton idx model "fa fa-times" (Color.color Color.Grey Color.S400) Msgs.CancelWorldBackup
+                , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.BackupWorld folderId worldId model.folderView.backupName)
+                ]
             ]
+        )
+
+
+inlineWarning : Html.Html Msg -> Html.Html Msg
+inlineWarning content =
+    Options.div
+        [ Elevation.e2
+        , Color.background (Color.color Color.Red Color.S50)
         ]
+        [ content ]
 
 
 deleteConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
 deleteConfirm idx model folderId worldId =
-    grid []
-        [ cell [ size Desktop 11, size Tablet 8, size Phone 4 ]
-            [ h4 [] [ text "Are you sure you want to delete this world?" ] ]
-        , cell [ size Desktop 1, size Tablet 8, size Phone 4, align Middle ]
-            [ iconButton idx model "fa fa-times" (Color.color Color.Grey Color.S400) Msgs.CancelDeleteWorld
-            , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.DeleteWorld folderId worldId)
+    inlineWarning
+        (grid
+            []
+            [ cell [ size Desktop 11, size Tablet 8, size Phone 4 ]
+                [ h4 [] [ text "Are you sure you want to delete this world?" ] ]
+            , cell [ size Desktop 1, size Tablet 8, size Phone 4, align Middle ]
+                [ iconButton idx model "fa fa-times" (Color.color Color.Grey Color.S400) Msgs.CancelDeleteWorld
+                , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.DeleteWorld folderId worldId)
+                ]
             ]
-        ]
+        )
