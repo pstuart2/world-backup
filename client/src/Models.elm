@@ -59,6 +59,10 @@ type alias IconClass =
     String
 
 
+type alias Message =
+    String
+
+
 type alias Folder =
     { id : FolderId
     , path : String

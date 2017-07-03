@@ -125,7 +125,7 @@ backupsTable iWorld model folderId worldId backups =
 backupRow : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
 backupRow idx model folderId worldId backup =
     tr []
-        [ td [ Table.numeric ]
+        [ td [ Table.numeric, Options.cs "button-group" ]
             [ iconButton idx model "fa fa-trash-o" (Color.color Color.Red Color.S900) (Msgs.DeleteBackup folderId worldId backup.id)
             , iconButton idx model "fa fa-recycle" (Color.color Color.Green Color.S900) (Msgs.RestoreBackup folderId worldId backup.id)
             ]
@@ -196,7 +196,7 @@ backupNameField idx model =
     Textfield.render Msgs.Mdl
         (List.append [ 8 ] idx)
         model.mdl
-        [ Textfield.label "Enter a name for your backup"
+        [ Textfield.label "Backup name"
         , Textfield.floatingLabel
         , Textfield.value model.folderView.backupName
         , Options.css "width" "100%"
@@ -210,6 +210,7 @@ inlineInfo content =
     Options.div
         [ Elevation.e2
         , Color.background (Color.color Color.Blue Color.S50)
+        , Options.cs "confirm"
         ]
         [ content ]
 
@@ -218,14 +219,62 @@ backupConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
 backupConfirm idx model folderId worldId =
     inlineInfo
         (grid []
-            [ cell [ size Desktop 11, size Tablet 8, size Phone 4 ]
+            [ cell [ size All 12 ] [ h4 [] [ text "Enter a name for your backup and confirm." ] ]
+            , cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
                 [ backupNameField idx model ]
-            , cell [ size Desktop 1, size Tablet 8, size Phone 4, align Middle ]
-                [ iconButton idx model "fa fa-times" (Color.color Color.Grey Color.S400) Msgs.CancelWorldBackup
-                , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.BackupWorld folderId worldId model.folderView.backupName)
+            , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
+                [ cancelButton idx model Msgs.CancelWorldBackup
+                , confirmButton idx "Backup" "fa fa-clone" model (Msgs.BackupWorld folderId worldId model.folderView.backupName)
                 ]
             ]
         )
+
+
+confirmButton : List Int -> Message -> IconClass -> Model -> Msg -> Html.Html Msg
+confirmButton idx buttonText icon model clickMsg =
+    Button.render Msgs.Mdl
+        (List.append [ 10 ] idx)
+        model.mdl
+        [ Button.raised
+        , Button.ripple
+        , Button.colored
+        , Options.onClick clickMsg
+        ]
+        [ i [ class icon ] []
+        , text buttonText
+        ]
+
+
+destructiveConfirmButton : List Int -> Message -> IconClass -> Model -> Msg -> Html.Html Msg
+destructiveConfirmButton idx buttonText icon model clickMsg =
+    Button.render Msgs.Mdl
+        (List.append [ 10 ] idx)
+        model.mdl
+        [ Button.raised
+        , Button.ripple
+        , Color.text Color.white
+        , Color.background (Color.color Color.Red Color.S900)
+        , Options.onClick clickMsg
+        ]
+        [ i [ class icon ] []
+        , text buttonText
+        ]
+
+
+cancelButton : List Int -> Model -> Msg -> Html.Html Msg
+cancelButton idx model clickMsg =
+    Button.render Msgs.Mdl
+        (List.append [ 10 ] idx)
+        model.mdl
+        [ Button.raised
+        , Button.ripple
+        , Color.text Color.white
+        , Color.background (Color.color Color.Grey Color.S500)
+        , Options.onClick clickMsg
+        ]
+        [ i [ class "fa fa-times" ] []
+        , text "Cancel"
+        ]
 
 
 inlineWarning : Html.Html Msg -> Html.Html Msg
@@ -233,6 +282,8 @@ inlineWarning content =
     Options.div
         [ Elevation.e2
         , Color.background (Color.color Color.Red Color.S50)
+        , Color.text (Color.color Color.Red Color.S900)
+        , Options.cs "confirm"
         ]
         [ content ]
 
@@ -242,11 +293,11 @@ deleteConfirm idx model folderId worldId =
     inlineWarning
         (grid
             []
-            [ cell [ size Desktop 11, size Tablet 8, size Phone 4 ]
+            [ cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
                 [ h4 [] [ text "Are you sure you want to delete this world?" ] ]
-            , cell [ size Desktop 1, size Tablet 8, size Phone 4, align Middle ]
-                [ iconButton idx model "fa fa-times" (Color.color Color.Grey Color.S400) Msgs.CancelDeleteWorld
-                , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.DeleteWorld folderId worldId)
+            , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
+                [ cancelButton idx model Msgs.CancelDeleteWorld
+                , destructiveConfirmButton idx "Delete" "fa fa-trash-o" model (Msgs.DeleteWorld folderId worldId)
                 ]
             ]
         )
