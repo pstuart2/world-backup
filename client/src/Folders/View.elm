@@ -15,7 +15,7 @@ import Time.DateTime as DateTime exposing (DateTime)
 
 view : Model -> Folder -> Html Msg
 view model folder =
-    div []
+    div [ class "folder-worlds" ]
         [ maybeList model folder.id folder.worlds
         ]
 
@@ -75,7 +75,10 @@ worldSection iWorld model folderId world =
             [ backupButton [ iWorld ] model (Msgs.StartWorldBackup world.id)
             , deleteButton [ iWorld ] model (Msgs.DeleteWorld folderId world.id)
             ]
-        , h2 [] [ text world.name ]
+        , h2 []
+            [ i [ class "fa fa-globe" ] []
+            , text world.name
+            ]
         , div
             [ class "create-backup-confirm" ]
             [ confirmContent ]
@@ -105,8 +108,8 @@ backupRow : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
 backupRow idx model folderId worldId backup =
     tr []
         [ td [ Table.numeric ]
-            [ iconButton idx model "fa fa-remove" (Color.color Color.Red Color.S900) (Msgs.DeleteBackup folderId worldId backup.id)
-            , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.RestoreBackup folderId worldId backup.id)
+            [ iconButton idx model "fa fa-trash-o" (Color.color Color.Red Color.S900) (Msgs.DeleteBackup folderId worldId backup.id)
+            , iconButton idx model "fa fa-recycle" (Color.color Color.Green Color.S900) (Msgs.RestoreBackup folderId worldId backup.id)
             ]
         , td [ Table.numeric ] [ text backup.name ]
         , td [] [ text (DateTime.toISO8601 backup.createdAt) ]
@@ -136,7 +139,9 @@ deleteButton idx model clickMsg =
         , Color.background (Color.color Color.Red Color.S300)
         , Options.onClick clickMsg
         ]
-        [ text "Delete" ]
+        [ i [ class "fa fa-trash-o" ] []
+        , text "Delete"
+        ]
 
 
 backupButton : List Int -> Model -> Msg -> Html.Html Msg
@@ -149,7 +154,9 @@ backupButton idx model clickMsg =
         , Button.raised
         , Options.onClick clickMsg
         ]
-        [ text "Backup" ]
+        [ i [ class "fa fa-clone" ] []
+        , text "Backup"
+        ]
 
 
 searchField : Model -> (String -> Msg) -> Html.Html Msg
