@@ -10,7 +10,9 @@ import RemoteData exposing (WebData)
 type Msg
     = Mdl (Material.Msg Msg)
     | DoNothing
+    | StartWorldDelete WorldId
     | DeleteWorld FolderId WorldId
+    | CancelDeleteWorld
     | DeleteBackup FolderId WorldId BackupId
     | RestoreBackup FolderId WorldId BackupId
     | OnWorldDeleted FolderId WorldId (Result Http.Error ())

@@ -1,6 +1,6 @@
 module Folders.View exposing (view)
 
-import Html exposing (Html, div, h2, i, text)
+import Html exposing (Html, div, h2, h4, i, text)
 import Html.Attributes exposing (class, href, style, value)
 import Material.Button as Button
 import Material.Color as Color
@@ -72,6 +72,8 @@ worldSection iWorld model folderId world =
         confirmContent =
             if model.folderView.createBackupId == Just world.id then
                 backupConfirm [ iWorld ] model folderId world.id
+            else if model.folderView.deleteWorldId == Just world.id then
+                deleteConfirm [ iWorld ] model folderId world.id
             else
                 text ""
 
@@ -90,7 +92,7 @@ worldSection iWorld model folderId world =
             ]
         , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "world-buttons" ]
             [ backupButton [ iWorld ] model (Msgs.StartWorldBackup world.id)
-            , deleteButton [ iWorld ] model (Msgs.DeleteWorld folderId world.id)
+            , deleteButton [ iWorld ] model (Msgs.StartWorldDelete world.id)
             ]
         , cell [ size All 12 ]
             [ confirmContent
@@ -207,8 +209,20 @@ backupConfirm idx model folderId worldId =
     grid []
         [ cell [ size Desktop 11, size Tablet 8, size Phone 4 ]
             [ backupNameField idx model ]
-        , cell [ size Desktop 1, size Tablet 8, size Phone 4 ]
-            [ iconButton idx model "fa fa-times-circle" (Color.color Color.Grey Color.S400) Msgs.CancelWorldBackup
+        , cell [ size Desktop 1, size Tablet 8, size Phone 4, align Middle ]
+            [ iconButton idx model "fa fa-times" (Color.color Color.Grey Color.S400) Msgs.CancelWorldBackup
             , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.BackupWorld folderId worldId model.folderView.backupName)
+            ]
+        ]
+
+
+deleteConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
+deleteConfirm idx model folderId worldId =
+    grid []
+        [ cell [ size Desktop 11, size Tablet 8, size Phone 4 ]
+            [ h4 [] [ text "Are you sure you want to delete this world?" ] ]
+        , cell [ size Desktop 1, size Tablet 8, size Phone 4, align Middle ]
+            [ iconButton idx model "fa fa-times" (Color.color Color.Grey Color.S400) Msgs.CancelDeleteWorld
+            , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.DeleteWorld folderId worldId)
             ]
         ]

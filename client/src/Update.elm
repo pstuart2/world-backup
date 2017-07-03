@@ -42,8 +42,14 @@ update msg model =
             in
             ( { model | route = newRoute }, newCommand )
 
+        Msgs.StartWorldDelete worldId ->
+            ( { model | folderView = setDeleteWorldId (Just worldId) model.folderView }, Cmd.none )
+
         Msgs.DeleteWorld folderId worldId ->
             ( model, Api.deleteWorld model.flags.apiUrl folderId worldId )
+
+        Msgs.CancelDeleteWorld ->
+            ( { model | folderView = setDeleteWorldId Nothing model.folderView }, Cmd.none )
 
         Msgs.OnWorldDeleted folderId worldId result ->
             case result of
@@ -114,6 +120,11 @@ sendMessage : msg -> Cmd msg
 sendMessage msg =
     Task.succeed msg
         |> Task.perform identity
+
+
+setDeleteWorldId : Maybe WorldId -> FolderView -> FolderView
+setDeleteWorldId worldId oldFv =
+    { oldFv | deleteWorldId = worldId, backupName = "" }
 
 
 setCreateBackupId : Maybe WorldId -> FolderView -> FolderView

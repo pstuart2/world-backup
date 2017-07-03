@@ -31,12 +31,13 @@ initialModel flags route =
     , mdl = Material.model
     , folders = RemoteData.Loading
     , route = route
-    , folderView = FolderView Nothing "" ""
+    , folderView = FolderView Nothing Nothing "" ""
     }
 
 
 type alias FolderView =
     { createBackupId : Maybe WorldId
+    , deleteWorldId : Maybe WorldId
     , backupName : String
     , worldFilter : String
     }
