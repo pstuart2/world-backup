@@ -1,13 +1,14 @@
 module View exposing (..)
 
 import Folders.List
+import Folders.Models exposing (FolderId)
 import Folders.View
 import Html exposing (..)
 import Html.Attributes exposing (class, href, style)
 import Material.Button as Button
 import Material.Layout as Layout
 import Material.Options as Options exposing (Style)
-import Models exposing (FolderId, Model)
+import Models exposing (Model)
 import Msgs exposing (Msg)
 import RemoteData
 import Routing exposing (homePath, onLinkClick)
@@ -61,7 +62,7 @@ page model =
 
 folderViewPage : Model -> FolderId -> Html Msg
 folderViewPage model folderId =
-    case model.folders of
+    case model.folders.folders of
         RemoteData.NotAsked ->
             text ""
 

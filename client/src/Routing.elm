@@ -1,10 +1,11 @@
 module Routing exposing (..)
 
 import Api
+import Folders.Models exposing (FolderId)
 import Html exposing (Attribute)
 import Html.Events exposing (onWithOptions)
 import Json.Decode as Decode
-import Models exposing (FolderId, Model, Route(..))
+import Models exposing (Model, Route(..))
 import Msgs exposing (Msg)
 import Navigation exposing (Location)
 import UrlParser exposing (..)

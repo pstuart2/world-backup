@@ -1,5 +1,6 @@
 module Msgs exposing (..)
 
+import Folders.Models exposing (BackupId, Folder, FolderId, World, WorldId)
 import Http
 import Material
 import Models exposing (..)

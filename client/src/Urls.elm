@@ -1,6 +1,6 @@
 module Urls exposing (..)
 
-import Models exposing (BackupId, FolderId, WorldId)
+import Folders.Models exposing (BackupId, FolderId, WorldId)
 
 
 folders : String -> String

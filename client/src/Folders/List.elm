@@ -1,11 +1,12 @@
 module Folders.List exposing (view)
 
+import Folders.Models exposing (Folder)
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Material.Button as Button
 import Material.Grid as Grid exposing (Device(..), cell, grid, size)
 import Material.Options as Options
-import Models exposing (Folder, Model)
+import Models exposing (Model)
 import Msgs exposing (Msg)
 import Numeral exposing (format)
 import RemoteData exposing (WebData)
@@ -20,7 +21,7 @@ view model =
 
 maybeList : Model -> Html Msg
 maybeList model =
-    case model.folders of
+    case model.folders.folders of
         RemoteData.NotAsked ->
             text ""
 

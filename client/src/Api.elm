@@ -1,9 +1,9 @@
 module Api exposing (..)
 
-import Commands exposing (backupRequestEncoder, foldersDecoder, worldDecoder, worldsDecoder)
+import Folders.Commands exposing (backupRequestEncoder, foldersDecoder, worldDecoder, worldsDecoder)
+import Folders.Models exposing (BackupId, FolderId, WorldId)
 import Http
 import Json.Decode as Decode exposing (Decoder)
-import Models exposing (BackupId, BackupRequest, Folder, FolderId, WorldId)
 import Msgs exposing (Msg)
 import RemoteData exposing (WebData)
 import Urls

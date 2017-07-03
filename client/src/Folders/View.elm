@@ -2,6 +2,7 @@ module Folders.View exposing (view)
 
 import Folders.Buttons exposing (..)
 import Folders.Confirms exposing (..)
+import Folders.Models exposing (Backup, Folder, FolderId, World, WorldId)
 import Html exposing (Html, div, h2, h4, i, text)
 import Html.Attributes exposing (class, href, style, value)
 import Material.Color as Color
@@ -45,7 +46,7 @@ list model folderId worlds =
             worldSection id model folderId world
 
         worldFilter world =
-            String.contains model.folderView.worldFilter world.name
+            String.contains model.folders.worldFilter world.name
 
         filteredWorlds =
             List.filter worldFilter worlds
@@ -74,7 +75,7 @@ searchField model msg =
         model.mdl
         [ Textfield.label "Filter worlds"
         , Textfield.floatingLabel
-        , Textfield.value model.folderView.worldFilter
+        , Textfield.value model.folders.worldFilter
         , Options.css "width" "calc(100%  - 32px)"
         , Options.onInput msg
         ]
@@ -85,9 +86,9 @@ worldSection : Int -> Model -> FolderId -> World -> Html Msg
 worldSection iWorld model folderId world =
     let
         confirmContent =
-            if model.folderView.createBackupId == Just world.id then
+            if model.folders.createBackupId == Just world.id then
                 backupConfirm [ iWorld ] model folderId world.id
-            else if model.folderView.deleteWorldId == Just world.id then
+            else if model.folders.deleteWorldId == Just world.id then
                 deleteConfirm [ iWorld ] model folderId world.id
             else
                 text ""

@@ -1,6 +1,7 @@
 module Folders.Confirms exposing (backupConfirm, deleteConfirm)
 
 import Folders.Buttons exposing (..)
+import Folders.Models exposing (FolderId, WorldId)
 import Html exposing (Html, div, h2, h4, i, text)
 import Material.Color as Color
 import Material.Elevation as Elevation
@@ -35,7 +36,7 @@ backupConfirm idx model folderId worldId =
                 [ backupNameField idx model ]
             , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
                 [ cancelButton idx model Msgs.CancelWorldBackup
-                , confirmButton idx "Backup" "fa fa-clone" model (Msgs.BackupWorld folderId worldId model.folderView.backupName)
+                , confirmButton idx "Backup" "fa fa-clone" model (Msgs.BackupWorld folderId worldId model.folders.backupName)
                 ]
             ]
         )
@@ -48,7 +49,7 @@ backupNameField idx model =
         model.mdl
         [ Textfield.label "Backup name"
         , Textfield.floatingLabel
-        , Textfield.value model.folderView.backupName
+        , Textfield.value model.folders.backupName
         , Options.css "width" "100%"
         , Options.onInput Msgs.UpdateBackupName
         ]

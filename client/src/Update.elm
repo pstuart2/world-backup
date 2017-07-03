@@ -2,11 +2,11 @@ module Update exposing (..)
 
 import Api
 import Debug exposing (log)
+import Folders.Update exposing (..)
 import Material
 import Models exposing (..)
 import Msgs exposing (Msg)
 import Navigation exposing (back, newUrl)
-import RemoteData
 import Routing exposing (getLocationCommand, parseLocation)
 import Task
 
@@ -27,10 +27,10 @@ update msg model =
             ( model, back 1 )
 
         Msgs.OnFetchFolders response ->
-            ( { model | folders = response }, Cmd.none )
+            ( { model | folders = updateFolders model.folders response }, Cmd.none )
 
         Msgs.OnFetchWorlds folderId response ->
-            ( updateWorlds model folderId response, Cmd.none )
+            ( { model | folders = updateWorlds model.folders folderId response }, Cmd.none )
 
         Msgs.OnLocationChange location ->
             let
@@ -43,18 +43,18 @@ update msg model =
             ( { model | route = newRoute }, newCommand )
 
         Msgs.StartWorldDelete worldId ->
-            ( { model | folderView = setDeleteWorldId (Just worldId) model.folderView }, Cmd.none )
+            ( { model | folders = setDeleteWorldId (Just worldId) model.folders }, Cmd.none )
 
         Msgs.DeleteWorld folderId worldId ->
             ( model, Api.deleteWorld model.flags.apiUrl folderId worldId )
 
         Msgs.CancelDeleteWorld ->
-            ( { model | folderView = setDeleteWorldId Nothing model.folderView }, Cmd.none )
+            ( { model | folders = setDeleteWorldId Nothing model.folders }, Cmd.none )
 
         Msgs.OnWorldDeleted folderId worldId result ->
             case result of
                 Ok _ ->
-                    ( deleteWorld model folderId worldId, Cmd.none )
+                    ( { model | folders = deleteWorld model.folders folderId worldId }, Cmd.none )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -65,7 +65,7 @@ update msg model =
         Msgs.OnBackupDeleted folderId worldId backupId result ->
             case result of
                 Ok world ->
-                    ( updateWorld model folderId world, Cmd.none )
+                    ( { model | folders = updateWorld model.folders folderId world }, Cmd.none )
 
                 Err world ->
                     let
@@ -91,7 +91,7 @@ update msg model =
         Msgs.OnWorldBackedUp folderId worldId result ->
             case result of
                 Ok world ->
-                    ( updateWorld model folderId world, sendMessage Msgs.CancelWorldBackup )
+                    ( { model | folders = updateWorld model.folders folderId world }, sendMessage Msgs.CancelWorldBackup )
 
                 Err world ->
                     let
@@ -101,111 +101,22 @@ update msg model =
                     ( model, Cmd.none )
 
         Msgs.FilterWorlds filter ->
-            ( { model | folderView = setWorldFilter filter model.folderView }, Cmd.none )
+            ( { model | folders = setWorldFilter filter model.folders }, Cmd.none )
 
         Msgs.ClearWorldsFilter ->
-            ( { model | folderView = setWorldFilter "" model.folderView }, Cmd.none )
+            ( { model | folders = setWorldFilter "" model.folders }, Cmd.none )
 
         Msgs.StartWorldBackup worldId ->
-            ( { model | folderView = setCreateBackupId (Just worldId) model.folderView }, Cmd.none )
+            ( { model | folders = setCreateBackupId (Just worldId) model.folders }, Cmd.none )
 
         Msgs.UpdateBackupName name ->
-            ( { model | folderView = setCreateBackupName name model.folderView }, Cmd.none )
+            ( { model | folders = setCreateBackupName name model.folders }, Cmd.none )
 
         Msgs.CancelWorldBackup ->
-            ( { model | folderView = setCreateBackupId Nothing model.folderView }, Cmd.none )
+            ( { model | folders = setCreateBackupId Nothing model.folders }, Cmd.none )
 
 
 sendMessage : msg -> Cmd msg
 sendMessage msg =
     Task.succeed msg
         |> Task.perform identity
-
-
-setDeleteWorldId : Maybe WorldId -> FolderView -> FolderView
-setDeleteWorldId worldId oldFv =
-    { oldFv | deleteWorldId = worldId, createBackupId = Nothing, backupName = "" }
-
-
-setCreateBackupId : Maybe WorldId -> FolderView -> FolderView
-setCreateBackupId worldId oldFv =
-    { oldFv | createBackupId = worldId, deleteWorldId = Nothing, backupName = "" }
-
-
-setCreateBackupName : String -> FolderView -> FolderView
-setCreateBackupName name oldFv =
-    { oldFv | backupName = name }
-
-
-setWorldFilter : String -> FolderView -> FolderView
-setWorldFilter filter oldFv =
-    { oldFv | worldFilter = filter }
-
-
-updateWorlds : Model -> FolderId -> RemoteData.WebData (List World) -> Model
-updateWorlds model folderId updatedWorlds =
-    let
-        pick currentFolder =
-            if folderId == currentFolder.id then
-                { currentFolder | worlds = updatedWorlds }
-            else
-                currentFolder
-
-        updateFolderList folders =
-            List.map pick folders
-
-        updatedFolders =
-            RemoteData.map updateFolderList model.folders
-    in
-    { model | folders = updatedFolders }
-
-
-updateWorld : Model -> FolderId -> World -> Model
-updateWorld model folderId updatedWorld =
-    let
-        findWorld currentWorld =
-            if updatedWorld.id == currentWorld.id then
-                updatedWorld
-            else
-                currentWorld
-
-        updateWorldsList worlds =
-            List.map findWorld worlds
-
-        findFolder currentFolder =
-            if folderId == currentFolder.id then
-                { currentFolder | worlds = RemoteData.map updateWorldsList currentFolder.worlds }
-            else
-                currentFolder
-
-        updateFolderList folders =
-            List.map findFolder folders
-
-        updatedFolders =
-            RemoteData.map updateFolderList model.folders
-    in
-    { model | folders = updatedFolders }
-
-
-deleteWorld : Model -> FolderId -> WorldId -> Model
-deleteWorld model folderId worldId =
-    let
-        isNotDeleted currentWorld =
-            worldId /= currentWorld.id
-
-        updateWorldsList worlds =
-            List.filter isNotDeleted worlds
-
-        findFolder currentFolder =
-            if folderId == currentFolder.id then
-                { currentFolder | worlds = RemoteData.map updateWorldsList currentFolder.worlds }
-            else
-                currentFolder
-
-        updateFolderList folders =
-            List.map findFolder folders
-
-        updatedFolders =
-            RemoteData.map updateFolderList model.folders
-    in
-    { model | folders = updatedFolders }
