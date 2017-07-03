@@ -6,5 +6,5 @@ also use as a chance to try out Elm
 # Todo
 * Add confirmation before delete / restore
 * Make search box bigger
-* Better icons for delete / restore vs cancel / confirm
 * Get folderId from route instead of passing it through messages (maybe)
+* Move world filter to FoldersView

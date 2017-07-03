@@ -4,6 +4,7 @@ import Html exposing (Html, div, h2, i, text)
 import Html.Attributes exposing (class, href, style, value)
 import Material.Button as Button
 import Material.Color as Color
+import Material.Grid as Grid exposing (Align(..), Device(..), align, cell, grid, size)
 import Material.Options as Options
 import Material.Table as Table exposing (table, tbody, td, th, thead, tr)
 import Material.Textfield as Textfield
@@ -48,10 +49,18 @@ list model folderId worlds =
         filteredWorlds =
             List.filter worldFilter worlds
     in
-    div []
-        [ div [ class "search-box" ] [ searchField model Msgs.FilterWorlds ]
-        , div [ class "grid-outer" ]
+    grid [ Grid.noSpacing ]
+        [ cell [ size All 12 ] [ filter model ]
+        , cell [ size All 12 ]
             (List.indexedMap viewWorld filteredWorlds)
+        ]
+
+
+filter : Model -> Html Msg
+filter model =
+    grid []
+        [ cell [ size Desktop 11, size Tablet 7, size Phone 3 ] [ searchField model Msgs.FilterWorlds ]
+        , cell [ size All 1, align Middle ] [ iconButton [ 9 ] model "fa fa-times-circle" (Color.color Color.Grey Color.S400) Msgs.DoNothing ]
         ]
 
 
@@ -70,19 +79,23 @@ worldSection iWorld model folderId world =
         sortedBackups =
             List.sortWith reverseCreatedAt world.backups
     in
-    div []
-        [ div [ class "world-buttons" ]
+    grid [ Options.cs "world" ]
+        [ cell [ size Desktop 9, size Tablet 8, size Phone 4, Options.cs "world-title", align Middle ]
+            [ h2 []
+                [ i [ class "fa fa-globe" ] []
+                , text world.name
+                ]
+            ]
+        , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "world-buttons" ]
             [ backupButton [ iWorld ] model (Msgs.StartWorldBackup world.id)
             , deleteButton [ iWorld ] model (Msgs.DeleteWorld folderId world.id)
             ]
-        , h2 []
-            [ i [ class "fa fa-globe" ] []
-            , text world.name
+        , cell [ size All 12 ]
+            [ confirmContent
             ]
-        , div
-            [ class "create-backup-confirm" ]
-            [ confirmContent ]
-        , backupsTable iWorld model folderId world.id sortedBackups
+        , cell [ size All 12 ]
+            [ backupsTable iWorld model folderId world.id sortedBackups
+            ]
         ]
 
 
@@ -164,10 +177,10 @@ searchField model msg =
     Textfield.render Msgs.Mdl
         [ 7 ]
         model.mdl
-        [ Textfield.label "Search"
+        [ Textfield.label "Filter"
         , Textfield.floatingLabel
-        , Textfield.expandable "id-of-expandable-1"
-        , Textfield.expandableIcon "search"
+        , Textfield.value model.worldFilter
+        , Options.css "width" "100%"
         , Options.onInput msg
         ]
         []
@@ -178,9 +191,10 @@ backupNameField idx model =
     Textfield.render Msgs.Mdl
         (List.append [ 8 ] idx)
         model.mdl
-        [ Textfield.label "Backup Name"
+        [ Textfield.label "Enter a name for your backup"
         , Textfield.floatingLabel
         , Textfield.value model.folderView.backupName
+        , Options.css "width" "100%"
         , Options.onInput Msgs.UpdateBackupName
         ]
         []
@@ -188,8 +202,11 @@ backupNameField idx model =
 
 backupConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
 backupConfirm idx model folderId worldId =
-    div []
-        [ backupNameField idx model
-        , iconButton idx model "fa fa-remove" (Color.color Color.Red Color.S900) Msgs.CancelWorldBackup
-        , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.BackupWorld folderId worldId model.folderView.backupName)
+    grid []
+        [ cell [ size Desktop 11, size Tablet 8, size Phone 4 ]
+            [ backupNameField idx model ]
+        , cell [ size Desktop 1, size Tablet 8, size Phone 4 ]
+            [ iconButton idx model "fa fa-times-circle" (Color.color Color.Grey Color.S400) Msgs.CancelWorldBackup
+            , iconButton idx model "fa fa-check" (Color.color Color.Green Color.S900) (Msgs.BackupWorld folderId worldId model.folderView.backupName)
+            ]
         ]
