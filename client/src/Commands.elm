@@ -2,7 +2,8 @@ module Commands exposing (..)
 
 import Json.Decode as Decode exposing (Decoder, andThen, fail, string, succeed)
 import Json.Decode.Pipeline exposing (decode, hardcoded, optional, required)
-import Models exposing (Backup, Flags, Folder, FolderId, World)
+import Json.Encode as Encode
+import Models exposing (..)
 import RemoteData exposing (WebData)
 import Time.DateTime as DateTime exposing (DateTime)
 
@@ -62,3 +63,12 @@ backupDecoder =
         |> required "id" Decode.string
         |> required "name" Decode.string
         |> required "createdAt" dateTimeDecoder
+
+
+backupRequestEncoder : BackupRequest -> Encode.Value
+backupRequestEncoder request =
+    let
+        attributes =
+            [ ( "name", Encode.string request.name ) ]
+    in
+    Encode.object attributes

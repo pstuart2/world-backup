@@ -5,3 +5,5 @@ also use as a chance to try out Elm
 
 # Todo
 * Add confirmation before delete / restore
+* Make search box bigger
+* Prompt for name and send a create backup request

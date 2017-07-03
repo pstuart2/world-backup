@@ -167,5 +167,10 @@ func (api *API) backupWorld(ctx echo.Context) error {
 	backupName := fmt.Sprintf("%s-%s.zip", fs.CleanName(r.Name), t.Format("20060102T150405"))
 
 	fs.CreateBackup(api.Fs, log, folder.Path, world.Name, api.config.BackupDir, backupName)
-	return nil
+
+	folder.ModifiedAt = getNow()
+	world.AddBackup(backupName)
+	api.Db.Save()
+
+	return ctx.JSON(http.StatusOK, world)
 }

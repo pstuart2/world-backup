@@ -78,6 +78,21 @@ update msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
+        Msgs.BackupWorld folderId worldId name ->
+            ( model, Api.backupWorld model.flags.apiUrl folderId worldId name )
+
+        Msgs.OnWorldBackedUp folderId worldId result ->
+            case result of
+                Ok world ->
+                    ( updateWorld model folderId world, Cmd.none )
+
+                Err world ->
+                    let
+                        x =
+                            Debug.log "error backing up world" world
+                    in
+                    ( model, Cmd.none )
+
         Msgs.FilterWorlds filter ->
             ( { model | worldFilter = filter }, Cmd.none )
 

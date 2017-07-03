@@ -73,3 +73,7 @@ type alias Backup =
     , name : String
     , createdAt : DateTime
     }
+
+
+type alias BackupRequest =
+    { name : String }

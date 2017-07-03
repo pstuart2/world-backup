@@ -525,14 +525,29 @@ func TestAPI_BackupWorld(t *testing.T) {
 				defer func() { fs.CreateBackup = origCreateBackup }()
 
 				Convey("It should call fs.CreateBackup", func() {
-					resultErr := api.backupWorld(c)
-					So(resultErr, ShouldBeNil)
+					mockDb.On("Save").Return(nil)
 
+					resultErr := api.backupWorld(c)
+
+					So(resultErr, ShouldBeNil)
 					So(wasCalled, ShouldBeTrue)
+
+					mockDb.AssertExpectations(t)
+					mockFs.AssertExpectations(t)
 
 					Convey("And return http.StatusOK", func() {
 
 						So(rec.Code, ShouldEqual, http.StatusOK)
+
+						Convey("And the updated world", func() {
+							var resultWorld data.World
+							err := json.Unmarshal(rec.Body.Bytes(), &resultWorld)
+							So(err, ShouldBeNil)
+
+							expectedString, _ := json.Marshal(w2)
+							So(rec.Body.String(), ShouldEqual, string(expectedString))
+
+						})
 					})
 				})
 			})

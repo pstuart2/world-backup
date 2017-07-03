@@ -22,3 +22,5 @@ type Msg
     | OnFetchFolders (WebData (List Folder))
     | OnFetchWorlds FolderId (WebData (List World))
     | OnLocationChange Location
+    | BackupWorld FolderId WorldId String
+    | OnWorldBackedUp FolderId WorldId (Result Http.Error World)
