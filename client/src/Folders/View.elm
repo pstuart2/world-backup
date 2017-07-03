@@ -59,8 +59,10 @@ list model folderId worlds =
 filter : Model -> Html Msg
 filter model =
     grid []
-        [ cell [ size Desktop 11, size Tablet 7, size Phone 3 ] [ searchField model Msgs.FilterWorlds ]
-        , cell [ size All 1, align Middle ] [ iconButton [ 9 ] model "fa fa-times-circle" (Color.color Color.Grey Color.S400) Msgs.ClearWorldsFilter ]
+        [ cell [ size All 12 ]
+            [ searchField model Msgs.FilterWorlds
+            , iconButton [ 9 ] model "fa fa-times-circle" (Color.color Color.Grey Color.S400) Msgs.ClearWorldsFilter
+            ]
         ]
 
 
@@ -180,7 +182,7 @@ searchField model msg =
         [ Textfield.label "Filter"
         , Textfield.floatingLabel
         , Textfield.value model.folderView.worldFilter
-        , Options.css "width" "100%"
+        , Options.css "width" "calc(100%  - 32px)"
         , Options.onInput msg
         ]
         []
