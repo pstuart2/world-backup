@@ -1,10 +1,10 @@
 module Folders.View exposing (view)
 
+import Folders.Buttons exposing (..)
+import Folders.Confirms exposing (..)
 import Html exposing (Html, div, h2, h4, i, text)
 import Html.Attributes exposing (class, href, style, value)
-import Material.Button as Button
 import Material.Color as Color
-import Material.Elevation as Elevation
 import Material.Grid as Grid exposing (Align(..), Device(..), align, cell, grid, size)
 import Material.Options as Options
 import Material.Table as Table exposing (table, tbody, td, th, thead, tr)
@@ -62,9 +62,23 @@ filter model =
     grid []
         [ cell [ size All 12 ]
             [ searchField model Msgs.FilterWorlds
-            , iconButton [ 9 ] model "fa fa-times-circle" (Color.color Color.Grey Color.S400) Msgs.ClearWorldsFilter
+            , cancelIconButton [ 0 ] model Msgs.ClearWorldsFilter
             ]
         ]
+
+
+searchField : Model -> (String -> Msg) -> Html.Html Msg
+searchField model msg =
+    Textfield.render Msgs.Mdl
+        [ 7 ]
+        model.mdl
+        [ Textfield.label "Filter worlds"
+        , Textfield.floatingLabel
+        , Textfield.value model.folderView.worldFilter
+        , Options.css "width" "calc(100%  - 32px)"
+        , Options.onInput msg
+        ]
+        []
 
 
 worldSection : Int -> Model -> FolderId -> World -> Html Msg
@@ -132,172 +146,3 @@ backupRow idx model folderId worldId backup =
         , td [ Table.numeric ] [ text backup.name ]
         , td [] [ text (DateTime.toISO8601 backup.createdAt) ]
         ]
-
-
-iconButton : List Int -> Model -> IconClass -> Color.Color -> Msg -> Html.Html Msg
-iconButton idx model icon color clickMsg =
-    Button.render Msgs.Mdl
-        (List.append [ 0 ] idx)
-        model.mdl
-        [ Button.icon
-        , Color.text color
-        , Options.onClick clickMsg
-        ]
-        [ i [ class icon ] [] ]
-
-
-deleteButton : List Int -> Model -> Msg -> Html.Html Msg
-deleteButton idx model clickMsg =
-    Button.render Msgs.Mdl
-        (List.append [ 1 ] idx)
-        model.mdl
-        [ Button.raised
-        , Button.ripple
-        , Color.text Color.white
-        , Color.background (Color.color Color.Red Color.S300)
-        , Options.onClick clickMsg
-        ]
-        [ i [ class "fa fa-trash-o" ] []
-        , text "Delete"
-        ]
-
-
-backupButton : List Int -> Model -> Msg -> Html.Html Msg
-backupButton idx model clickMsg =
-    Button.render Msgs.Mdl
-        (List.append [ 2 ] idx)
-        model.mdl
-        [ Button.ripple
-        , Button.colored
-        , Button.raised
-        , Options.onClick clickMsg
-        ]
-        [ i [ class "fa fa-clone" ] []
-        , text "Backup"
-        ]
-
-
-searchField : Model -> (String -> Msg) -> Html.Html Msg
-searchField model msg =
-    Textfield.render Msgs.Mdl
-        [ 7 ]
-        model.mdl
-        [ Textfield.label "Filter"
-        , Textfield.floatingLabel
-        , Textfield.value model.folderView.worldFilter
-        , Options.css "width" "calc(100%  - 32px)"
-        , Options.onInput msg
-        ]
-        []
-
-
-backupNameField : List Int -> Model -> Html.Html Msg
-backupNameField idx model =
-    Textfield.render Msgs.Mdl
-        (List.append [ 8 ] idx)
-        model.mdl
-        [ Textfield.label "Backup name"
-        , Textfield.floatingLabel
-        , Textfield.value model.folderView.backupName
-        , Options.css "width" "100%"
-        , Options.onInput Msgs.UpdateBackupName
-        ]
-        []
-
-
-inlineInfo : Html.Html Msg -> Html.Html Msg
-inlineInfo content =
-    Options.div
-        [ Elevation.e2
-        , Color.background (Color.color Color.Blue Color.S50)
-        , Options.cs "confirm"
-        ]
-        [ content ]
-
-
-backupConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
-backupConfirm idx model folderId worldId =
-    inlineInfo
-        (grid []
-            [ cell [ size All 12 ] [ h4 [] [ text "Enter a name for your backup and confirm." ] ]
-            , cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
-                [ backupNameField idx model ]
-            , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
-                [ cancelButton idx model Msgs.CancelWorldBackup
-                , confirmButton idx "Backup" "fa fa-clone" model (Msgs.BackupWorld folderId worldId model.folderView.backupName)
-                ]
-            ]
-        )
-
-
-confirmButton : List Int -> Message -> IconClass -> Model -> Msg -> Html.Html Msg
-confirmButton idx buttonText icon model clickMsg =
-    Button.render Msgs.Mdl
-        (List.append [ 10 ] idx)
-        model.mdl
-        [ Button.raised
-        , Button.ripple
-        , Button.colored
-        , Options.onClick clickMsg
-        ]
-        [ i [ class icon ] []
-        , text buttonText
-        ]
-
-
-destructiveConfirmButton : List Int -> Message -> IconClass -> Model -> Msg -> Html.Html Msg
-destructiveConfirmButton idx buttonText icon model clickMsg =
-    Button.render Msgs.Mdl
-        (List.append [ 10 ] idx)
-        model.mdl
-        [ Button.raised
-        , Button.ripple
-        , Color.text Color.white
-        , Color.background (Color.color Color.Red Color.S900)
-        , Options.onClick clickMsg
-        ]
-        [ i [ class icon ] []
-        , text buttonText
-        ]
-
-
-cancelButton : List Int -> Model -> Msg -> Html.Html Msg
-cancelButton idx model clickMsg =
-    Button.render Msgs.Mdl
-        (List.append [ 10 ] idx)
-        model.mdl
-        [ Button.raised
-        , Button.ripple
-        , Color.text Color.white
-        , Color.background (Color.color Color.Grey Color.S500)
-        , Options.onClick clickMsg
-        ]
-        [ i [ class "fa fa-times" ] []
-        , text "Cancel"
-        ]
-
-
-inlineWarning : Html.Html Msg -> Html.Html Msg
-inlineWarning content =
-    Options.div
-        [ Elevation.e2
-        , Color.background (Color.color Color.Red Color.S50)
-        , Color.text (Color.color Color.Red Color.S900)
-        , Options.cs "confirm"
-        ]
-        [ content ]
-
-
-deleteConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
-deleteConfirm idx model folderId worldId =
-    inlineWarning
-        (grid
-            []
-            [ cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
-                [ h4 [] [ text "Are you sure you want to delete this world?" ] ]
-            , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
-                [ cancelButton idx model Msgs.CancelDeleteWorld
-                , destructiveConfirmButton idx "Delete" "fa fa-trash-o" model (Msgs.DeleteWorld folderId worldId)
-                ]
-            ]
-        )
