@@ -20,7 +20,6 @@ type alias Model =
     { flags : Flags
     , mdl : Material.Model
     , folders : WebData (List Folder)
-    , worldFilter : String
     , route : Route
     , folderView : FolderView
     }
@@ -31,15 +30,15 @@ initialModel flags route =
     { flags = flags
     , mdl = Material.model
     , folders = RemoteData.Loading
-    , worldFilter = ""
     , route = route
-    , folderView = FolderView Nothing ""
+    , folderView = FolderView Nothing "" ""
     }
 
 
 type alias FolderView =
     { createBackupId : Maybe WorldId
     , backupName : String
+    , worldFilter : String
     }
 
 

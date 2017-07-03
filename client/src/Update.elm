@@ -95,7 +95,10 @@ update msg model =
                     ( model, Cmd.none )
 
         Msgs.FilterWorlds filter ->
-            ( { model | worldFilter = filter }, Cmd.none )
+            ( { model | folderView = setWorldFilter filter model.folderView }, Cmd.none )
+
+        Msgs.ClearWorldsFilter ->
+            ( { model | folderView = setWorldFilter "" model.folderView }, Cmd.none )
 
         Msgs.StartWorldBackup worldId ->
             ( { model | folderView = setCreateBackupId (Just worldId) model.folderView }, Cmd.none )
@@ -121,6 +124,11 @@ setCreateBackupId worldId oldFv =
 setCreateBackupName : String -> FolderView -> FolderView
 setCreateBackupName name oldFv =
     { oldFv | backupName = name }
+
+
+setWorldFilter : String -> FolderView -> FolderView
+setWorldFilter filter oldFv =
+    { oldFv | worldFilter = filter }
 
 
 updateWorlds : Model -> FolderId -> RemoteData.WebData (List World) -> Model

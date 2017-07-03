@@ -18,6 +18,7 @@ type Msg
     | OnBackupRestored FolderId WorldId BackupId (Result Http.Error ())
     | ChangeLocation String
     | FilterWorlds String
+    | ClearWorldsFilter
     | GoBack
     | OnFetchFolders (WebData (List Folder))
     | OnFetchWorlds FolderId (WebData (List World))

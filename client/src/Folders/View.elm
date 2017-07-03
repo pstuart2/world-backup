@@ -44,7 +44,7 @@ list model folderId worlds =
             worldSection id model folderId world
 
         worldFilter world =
-            String.contains model.worldFilter world.name
+            String.contains model.folderView.worldFilter world.name
 
         filteredWorlds =
             List.filter worldFilter worlds
@@ -60,7 +60,7 @@ filter : Model -> Html Msg
 filter model =
     grid []
         [ cell [ size Desktop 11, size Tablet 7, size Phone 3 ] [ searchField model Msgs.FilterWorlds ]
-        , cell [ size All 1, align Middle ] [ iconButton [ 9 ] model "fa fa-times-circle" (Color.color Color.Grey Color.S400) Msgs.DoNothing ]
+        , cell [ size All 1, align Middle ] [ iconButton [ 9 ] model "fa fa-times-circle" (Color.color Color.Grey Color.S400) Msgs.ClearWorldsFilter ]
         ]
 
 
@@ -179,7 +179,7 @@ searchField model msg =
         model.mdl
         [ Textfield.label "Filter"
         , Textfield.floatingLabel
-        , Textfield.value model.worldFilter
+        , Textfield.value model.folderView.worldFilter
         , Options.css "width" "100%"
         , Options.onInput msg
         ]
