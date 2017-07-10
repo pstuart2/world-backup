@@ -9,7 +9,7 @@ import Models exposing (..)
 import Msgs exposing (Msg)
 
 
-iconButton : List Int -> Model -> IconClass -> Color.Color -> Msg -> Html.Html Msg
+iconButton : List Int -> Model -> IconClass -> Color.Color -> Msg -> Html Msg
 iconButton idx model icon color clickMsg =
     Button.render Msgs.Mdl
         (List.append [ 0 ] idx)
@@ -21,7 +21,7 @@ iconButton idx model icon color clickMsg =
         [ i [ class icon ] [] ]
 
 
-cancelIconButton : List Int -> Model -> Msg -> Html.Html Msg
+cancelIconButton : List Int -> Model -> Msg -> Html Msg
 cancelIconButton idx model clickMsg =
     Button.render Msgs.Mdl
         (List.append [ 1 ] idx)
@@ -33,7 +33,7 @@ cancelIconButton idx model clickMsg =
         [ i [ class "fa fa-times-circle" ] [] ]
 
 
-deleteButton : List Int -> Model -> Msg -> Html.Html Msg
+deleteButton : List Int -> Model -> Msg -> Html Msg
 deleteButton idx model clickMsg =
     Button.render Msgs.Mdl
         (List.append [ 2 ] idx)
@@ -49,7 +49,7 @@ deleteButton idx model clickMsg =
         ]
 
 
-backupButton : List Int -> Model -> Msg -> Html.Html Msg
+backupButton : List Int -> Model -> Msg -> Html Msg
 backupButton idx model clickMsg =
     Button.render Msgs.Mdl
         (List.append [ 3 ] idx)
@@ -64,7 +64,7 @@ backupButton idx model clickMsg =
         ]
 
 
-destructiveConfirmButton : List Int -> Message -> IconClass -> Model -> Msg -> Html.Html Msg
+destructiveConfirmButton : List Int -> Message -> IconClass -> Model -> Msg -> Html Msg
 destructiveConfirmButton idx buttonText icon model clickMsg =
     Button.render Msgs.Mdl
         (List.append [ 4 ] idx)
@@ -80,7 +80,7 @@ destructiveConfirmButton idx buttonText icon model clickMsg =
         ]
 
 
-cancelButton : List Int -> Model -> Msg -> Html.Html Msg
+cancelButton : List Int -> Model -> Msg -> Html Msg
 cancelButton idx model clickMsg =
     Button.render Msgs.Mdl
         (List.append [ 5 ] idx)
@@ -96,7 +96,7 @@ cancelButton idx model clickMsg =
         ]
 
 
-confirmButton : List Int -> Message -> IconClass -> Model -> Msg -> Html.Html Msg
+confirmButton : List Int -> Message -> IconClass -> Model -> Msg -> Html Msg
 confirmButton idx buttonText icon model clickMsg =
     Button.render Msgs.Mdl
         (List.append [ 6 ] idx)

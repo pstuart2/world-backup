@@ -1,6 +1,7 @@
 module Folders.List exposing (view)
 
 import Folders.Models exposing (Folder)
+import Folders.Msgs as FolderMsgs
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Material.Button as Button
@@ -14,13 +15,13 @@ import Routing exposing (folderPath, onLinkClick)
 import Time.DateTime as DateTime exposing (DateTime)
 
 
-view : Model -> Html Msg
-view model =
-    maybeList model
+view : (FolderMsgs.Msg -> Msg) -> Model -> Html Msg
+view pMsg model =
+    maybeList pMsg model
 
 
-maybeList : Model -> Html Msg
-maybeList model =
+maybeList : (FolderMsgs.Msg -> Msg) -> Model -> Html Msg
+maybeList pMsg model =
     case model.folders.folders of
         RemoteData.NotAsked ->
             text ""
@@ -29,17 +30,17 @@ maybeList model =
             text "Loading..."
 
         RemoteData.Success folders ->
-            list model folders
+            list pMsg model folders
 
         RemoteData.Failure error ->
             text (toString error)
 
 
-list : Model -> List Folder -> Html Msg
-list model folders =
+list : (FolderMsgs.Msg -> Msg) -> Model -> List Folder -> Html Msg
+list pMsg model folders =
     div [ class "grid-outer" ]
         [ headerRow
-        , folderBody model folders
+        , folderBody pMsg model folders
         ]
 
 
@@ -53,13 +54,13 @@ headerRow =
         ]
 
 
-folderBody : Model -> List Folder -> Html Msg
-folderBody model folders =
-    div [] (List.map (folderRow model) folders)
+folderBody : (FolderMsgs.Msg -> Msg) -> Model -> List Folder -> Html Msg
+folderBody pMsg model folders =
+    div [] (List.map (folderRow pMsg model) folders)
 
 
-folderRow : Model -> Folder -> Html Msg
-folderRow model folder =
+folderRow : (FolderMsgs.Msg -> Msg) -> Model -> Folder -> Html Msg
+folderRow pMsg model folder =
     grid []
         [ cell [ size All 2 ] [ viewFolderButton model folder ]
         , cell [ size All 2 ] [ text (DateTime.toISO8601 folder.lastRun) ]
