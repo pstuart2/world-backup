@@ -1,6 +1,6 @@
 module Routing exposing (..)
 
-import Folders.Api
+import Api
 import Folders.Models exposing (FolderId)
 import Html exposing (Attribute)
 import Html.Events exposing (onWithOptions)
@@ -45,10 +45,10 @@ getLocationCommand : String -> Route -> Cmd Msg
 getLocationCommand apiUrl route =
     case route of
         Models.FoldersRoute ->
-            Folders.Api.fetchFolders Msgs.FolderMsg apiUrl
+            Api.fetchFolders apiUrl
 
         Models.FolderRoute id ->
-            Folders.Api.fetchFolderWorlds Msgs.FolderMsg apiUrl id
+            Api.fetchFolderWorlds apiUrl id
 
         _ ->
             Cmd.none

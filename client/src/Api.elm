@@ -1,26 +1,12 @@
-module Folders.Api exposing (..)
+module Api exposing (..)
 
 import Folders.Commands exposing (backupRequestEncoder, foldersDecoder, worldDecoder, worldsDecoder)
 import Folders.Models exposing (BackupId, FolderId, WorldId)
-import Folders.Msgs as FolderMsgs
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Msgs exposing (Msg)
 import RemoteData exposing (WebData)
 import Urls
-
-
-get : String -> Decode.Decoder a -> Http.Request a
-get url decoder =
-    Http.request
-        { method = "GET"
-        , headers = []
-        , url = url
-        , body = Http.emptyBody
-        , expect = Http.expectJson decoder
-        , timeout = Nothing
-        , withCredentials = False
-        }
 
 
 delete : String -> Decode.Decoder a -> Http.Request a
@@ -75,52 +61,49 @@ patch url body =
         }
 
 
-fetchFolders : (FolderMsgs.Msg -> Msg) -> String -> Cmd Msg
-fetchFolders pMsg baseApiUrl =
+fetchFolders : String -> Cmd Msg
+fetchFolders baseApiUrl =
     Http.get (Urls.folders baseApiUrl) foldersDecoder
         |> RemoteData.sendRequest
-        |> Cmd.map (\a -> pMsg (FolderMsgs.OnFetchFolders a))
+        |> Cmd.map Msgs.OnFetchFolders
 
 
-fetchFolderWorlds : (FolderMsgs.Msg -> Msg) -> String -> FolderId -> Cmd Msg
-fetchFolderWorlds pMsg baseApiUrl folderId =
+fetchFolderWorlds : String -> FolderId -> Cmd Msg
+fetchFolderWorlds baseApiUrl folderId =
     Http.get (Urls.worlds baseApiUrl folderId) worldsDecoder
         |> RemoteData.sendRequest
-        |> Cmd.map (\a -> pMsg (FolderMsgs.OnFetchWorlds folderId a))
+        |> Cmd.map (Msgs.OnFetchWorlds folderId)
 
 
-deleteWorld : (FolderMsgs.Msg -> Msg) -> String -> FolderId -> WorldId -> Cmd Msg
-deleteWorld pMsg baseApiUrl folderId worldId =
+deleteWorld : String -> FolderId -> WorldId -> Cmd Msg
+deleteWorld baseApiUrl folderId worldId =
     let
         request =
             deleteNoResponse (Urls.world baseApiUrl folderId worldId)
     in
-    Http.send (FolderMsgs.OnWorldDeleted folderId worldId) request
-        |> Cmd.map pMsg
+    Http.send (Msgs.OnWorldDeleted folderId worldId) request
 
 
-deleteBackup : (FolderMsgs.Msg -> Msg) -> String -> FolderId -> WorldId -> BackupId -> Cmd Msg
-deleteBackup pMsg baseApiUrl folderId worldId backupId =
+deleteBackup : String -> FolderId -> WorldId -> BackupId -> Cmd Msg
+deleteBackup baseApiUrl folderId worldId backupId =
     let
         request =
             delete (Urls.backup baseApiUrl folderId worldId backupId) worldDecoder
     in
-    Http.send (FolderMsgs.OnBackupDeleted folderId worldId backupId) request
-        |> Cmd.map pMsg
+    Http.send (Msgs.OnBackupDeleted folderId worldId backupId) request
 
 
-restoreBackup : (FolderMsgs.Msg -> Msg) -> String -> FolderId -> WorldId -> BackupId -> Cmd Msg
-restoreBackup pMsg baseApiUrl folderId worldId backupId =
+restoreBackup : String -> FolderId -> WorldId -> BackupId -> Cmd Msg
+restoreBackup baseApiUrl folderId worldId backupId =
     let
         request =
             patch (Urls.backup baseApiUrl folderId worldId backupId) Http.emptyBody
     in
-    Http.send (FolderMsgs.OnBackupRestored folderId worldId backupId) request
-        |> Cmd.map pMsg
+    Http.send (Msgs.OnBackupRestored folderId worldId backupId) request
 
 
-backupWorld : (FolderMsgs.Msg -> Msg) -> String -> FolderId -> WorldId -> String -> Cmd Msg
-backupWorld pMsg baseApiUrl folderId worldId backupName =
+backupWorld : String -> FolderId -> WorldId -> String -> Cmd Msg
+backupWorld baseApiUrl folderId worldId backupName =
     let
         backupRequestBody =
             backupRequestEncoder { name = backupName }
@@ -129,5 +112,4 @@ backupWorld pMsg baseApiUrl folderId worldId backupName =
         request =
             post (Urls.backups baseApiUrl folderId worldId) backupRequestBody worldDecoder
     in
-    Http.send (FolderMsgs.OnWorldBackedUp folderId worldId) request
-        |> Cmd.map pMsg
+    Http.send (Msgs.OnWorldBackedUp folderId worldId) request

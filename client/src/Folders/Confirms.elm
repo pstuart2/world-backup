@@ -2,7 +2,6 @@ module Folders.Confirms exposing (backupConfirm, deleteConfirm)
 
 import Folders.Buttons exposing (..)
 import Folders.Models exposing (FolderId, WorldId)
-import Folders.Msgs as FolderMsgs
 import Html exposing (Html, div, h2, h4, i, text)
 import Material.Color as Color
 import Material.Elevation as Elevation
@@ -21,15 +20,11 @@ deleteConfirm idx model folderId worldId =
             [ cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
                 [ h4 [] [ text "Are you sure you want to delete this world?" ] ]
             , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
-                [ cancelButton idx model (Msgs.FolderMsg FolderMsgs.CancelDeleteWorld)
-                , destructiveConfirmButton idx "Delete" "fa fa-trash-o" model (Msgs.FolderMsg (FolderMsgs.DeleteWorld folderId worldId))
+                [ cancelButton idx model Msgs.CancelDeleteWorld
+                , destructiveConfirmButton idx "Delete" "fa fa-trash-o" model (Msgs.DeleteWorld folderId worldId)
                 ]
             ]
         )
-
-
-
--- TODO: Msgs.FolderMsg should be passed in from the top level
 
 
 backupConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
@@ -40,8 +35,8 @@ backupConfirm idx model folderId worldId =
             , cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
                 [ backupNameField idx model ]
             , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
-                [ cancelButton idx model (Msgs.FolderMsg FolderMsgs.CancelWorldBackup)
-                , confirmButton idx "Backup" "fa fa-clone" model (Msgs.FolderMsg (FolderMsgs.BackupWorld folderId worldId model.folders.backupName))
+                [ cancelButton idx model Msgs.CancelWorldBackup
+                , confirmButton idx "Backup" "fa fa-clone" model (Msgs.BackupWorld folderId worldId model.folders.backupName)
                 ]
             ]
         )
@@ -56,7 +51,7 @@ backupNameField idx model =
         , Textfield.floatingLabel
         , Textfield.value model.folders.backupName
         , Options.css "width" "100%"
-        , Options.onInput (\inp -> Msgs.FolderMsg (FolderMsgs.UpdateBackupName inp))
+        , Options.onInput Msgs.UpdateBackupName
         ]
         []
 

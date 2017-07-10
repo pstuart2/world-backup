@@ -3,7 +3,6 @@ module Folders.View exposing (view)
 import Folders.Buttons exposing (..)
 import Folders.Confirms exposing (..)
 import Folders.Models exposing (Backup, Folder, FolderId, World, WorldId)
-import Folders.Msgs as FolderMsgs
 import Html exposing (Html, div, h2, h4, i, text)
 import Html.Attributes exposing (class, href, style, value)
 import Material.Color as Color
@@ -17,15 +16,15 @@ import RemoteData
 import Time.DateTime as DateTime exposing (DateTime)
 
 
-view : (FolderMsgs.Msg -> Msg) -> Model -> Folder -> Html Msg
-view pMsg model folder =
+view : Model -> Folder -> Html Msg
+view model folder =
     div [ class "folder-worlds" ]
-        [ maybeList pMsg model folder.id folder.worlds
+        [ maybeList model folder.id folder.worlds
         ]
 
 
-maybeList : (FolderMsgs.Msg -> Msg) -> Model -> FolderId -> RemoteData.WebData (List World) -> Html Msg
-maybeList pMsg model folderId response =
+maybeList : Model -> FolderId -> RemoteData.WebData (List World) -> Html Msg
+maybeList model folderId response =
     case response of
         RemoteData.NotAsked ->
             text ""
@@ -34,14 +33,14 @@ maybeList pMsg model folderId response =
             text "Loading..."
 
         RemoteData.Success worlds ->
-            list pMsg model folderId worlds
+            list model folderId worlds
 
         RemoteData.Failure error ->
             text (toString error)
 
 
-list : (FolderMsgs.Msg -> Msg) -> Model -> FolderId -> List World -> Html Msg
-list pMsg model folderId worlds =
+list : Model -> FolderId -> List World -> Html Msg
+list model folderId worlds =
     let
         viewWorld id world =
             worldSection id model folderId world
@@ -63,8 +62,8 @@ filter : Model -> Html Msg
 filter model =
     grid []
         [ cell [ size All 12 ]
-            [ searchField model (\inp -> Msgs.FolderMsg (FolderMsgs.FilterWorlds inp))
-            , cancelIconButton [ 0 ] model (Msgs.FolderMsg FolderMsgs.ClearWorldsFilter)
+            [ searchField model Msgs.FilterWorlds
+            , cancelIconButton [ 0 ] model Msgs.ClearWorldsFilter
             ]
         ]
 
@@ -108,8 +107,8 @@ worldSection iWorld model folderId world =
                 ]
             ]
         , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "world-buttons" ]
-            [ backupButton [ iWorld ] model (Msgs.FolderMsg (FolderMsgs.StartWorldBackup world.id))
-            , deleteButton [ iWorld ] model (Msgs.FolderMsg (FolderMsgs.StartWorldDelete world.id))
+            [ backupButton [ iWorld ] model (Msgs.StartWorldBackup world.id)
+            , deleteButton [ iWorld ] model (Msgs.StartWorldDelete world.id)
             ]
         , cell [ size All 12 ]
             [ confirmContent
@@ -142,8 +141,8 @@ backupRow : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
 backupRow idx model folderId worldId backup =
     tr []
         [ td [ Table.numeric, Options.cs "button-group" ]
-            [ iconButton idx model "fa fa-trash-o" (Color.color Color.Red Color.S900) (Msgs.FolderMsg (FolderMsgs.DeleteBackup folderId worldId backup.id))
-            , iconButton idx model "fa fa-recycle" (Color.color Color.Green Color.S900) (Msgs.FolderMsg (FolderMsgs.RestoreBackup folderId worldId backup.id))
+            [ iconButton idx model "fa fa-trash-o" (Color.color Color.Red Color.S900) (Msgs.DeleteBackup folderId worldId backup.id)
+            , iconButton idx model "fa fa-recycle" (Color.color Color.Green Color.S900) (Msgs.RestoreBackup folderId worldId backup.id)
             ]
         , td [ Table.numeric ] [ text backup.name ]
         , td [] [ text (DateTime.toISO8601 backup.createdAt) ]

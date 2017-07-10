@@ -47,11 +47,11 @@ homeButton model =
         [ i [ class "fa fa-home" ] [] ]
 
 
-page : Model -> Html Msg
+page : Model -> Html Msgs.Msg
 page model =
     case model.route of
         Models.FoldersRoute ->
-            Folders.List.view Msgs.FolderMsg model
+            Folders.List.view model
 
         Models.FolderRoute id ->
             folderViewPage model id
@@ -78,7 +78,7 @@ folderViewPage model folderId =
             in
             case maybeFolder of
                 Just folder ->
-                    Folders.View.view Msgs.FolderMsg model folder
+                    Folders.View.view model folder
 
                 Nothing ->
                     notFoundView
