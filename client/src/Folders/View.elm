@@ -44,7 +44,7 @@ list : (FolderMsgs.Msg -> Msg) -> Model -> FolderId -> List World -> Html Msg
 list pMsg model folderId worlds =
     let
         viewWorld id world =
-            worldSection id model folderId world
+            worldSection pMsg id model folderId world
 
         worldFilter world =
             String.contains model.folders.worldFilter world.name
@@ -53,18 +53,18 @@ list pMsg model folderId worlds =
             List.filter worldFilter worlds
     in
     grid [ Grid.noSpacing ]
-        [ cell [ size All 12 ] [ filter model ]
+        [ cell [ size All 12 ] [ filter pMsg model ]
         , cell [ size All 12 ]
             (List.indexedMap viewWorld filteredWorlds)
         ]
 
 
-filter : Model -> Html Msg
-filter model =
+filter : (FolderMsgs.Msg -> Msg) -> Model -> Html Msg
+filter pMsg model =
     grid []
         [ cell [ size All 12 ]
-            [ searchField model (\inp -> Msgs.FolderMsg (FolderMsgs.FilterWorlds inp))
-            , cancelIconButton [ 0 ] model (Msgs.FolderMsg FolderMsgs.ClearWorldsFilter)
+            [ searchField model (\inp -> pMsg (FolderMsgs.FilterWorlds inp))
+            , cancelIconButton [ 0 ] model (pMsg FolderMsgs.ClearWorldsFilter)
             ]
         ]
 
@@ -83,14 +83,14 @@ searchField model msg =
         []
 
 
-worldSection : Int -> Model -> FolderId -> World -> Html Msg
-worldSection iWorld model folderId world =
+worldSection : (FolderMsgs.Msg -> Msg) -> Int -> Model -> FolderId -> World -> Html Msg
+worldSection pMsg iWorld model folderId world =
     let
         confirmContent =
             if model.folders.createBackupId == Just world.id then
-                backupConfirm [ iWorld ] model folderId world.id
+                backupConfirm pMsg [ iWorld ] model folderId world.id
             else if model.folders.deleteWorldId == Just world.id then
-                deleteConfirm [ iWorld ] model folderId world.id
+                deleteConfirm pMsg [ iWorld ] model folderId world.id
             else
                 text ""
 
@@ -108,23 +108,23 @@ worldSection iWorld model folderId world =
                 ]
             ]
         , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "world-buttons" ]
-            [ backupButton [ iWorld ] model (Msgs.FolderMsg (FolderMsgs.StartWorldBackup world.id))
-            , deleteButton [ iWorld ] model (Msgs.FolderMsg (FolderMsgs.StartWorldDelete world.id))
+            [ backupButton [ iWorld ] model (pMsg (FolderMsgs.StartWorldBackup world.id))
+            , deleteButton [ iWorld ] model (pMsg (FolderMsgs.StartWorldDelete world.id))
             ]
         , cell [ size All 12 ]
             [ confirmContent
             ]
         , cell [ size All 12 ]
-            [ backupsTable iWorld model folderId world.id sortedBackups
+            [ backupsTable pMsg iWorld model folderId world.id sortedBackups
             ]
         ]
 
 
-backupsTable : Int -> Model -> FolderId -> WorldId -> List Backup -> Html Msg
-backupsTable iWorld model folderId worldId backups =
+backupsTable : (FolderMsgs.Msg -> Msg) -> Int -> Model -> FolderId -> WorldId -> List Backup -> Html Msg
+backupsTable pMsg iWorld model folderId worldId backups =
     let
         viewBackup id backup =
-            backupRow [ iWorld, id ] model folderId worldId backup
+            backupRow pMsg [ iWorld, id ] model folderId worldId backup
     in
     table [ Options.css "width" "100%" ]
         [ thead []
@@ -138,12 +138,12 @@ backupsTable iWorld model folderId worldId backups =
         ]
 
 
-backupRow : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
-backupRow idx model folderId worldId backup =
+backupRow : (FolderMsgs.Msg -> Msg) -> List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
+backupRow pMsg idx model folderId worldId backup =
     tr []
         [ td [ Table.numeric, Options.cs "button-group" ]
-            [ iconButton idx model "fa fa-trash-o" (Color.color Color.Red Color.S900) (Msgs.FolderMsg (FolderMsgs.DeleteBackup folderId worldId backup.id))
-            , iconButton idx model "fa fa-recycle" (Color.color Color.Green Color.S900) (Msgs.FolderMsg (FolderMsgs.RestoreBackup folderId worldId backup.id))
+            [ iconButton idx model "fa fa-trash-o" (Color.color Color.Red Color.S900) (pMsg (FolderMsgs.DeleteBackup folderId worldId backup.id))
+            , iconButton idx model "fa fa-recycle" (Color.color Color.Green Color.S900) (pMsg (FolderMsgs.RestoreBackup folderId worldId backup.id))
             ]
         , td [ Table.numeric ] [ text backup.name ]
         , td [] [ text (DateTime.toISO8601 backup.createdAt) ]
