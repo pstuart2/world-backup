@@ -62,8 +62,8 @@ filter : Model -> Html Msg
 filter model =
     grid []
         [ cell [ size All 12 ]
-            [ searchField model Msgs.FilterWorlds
-            , cancelIconButton [ 0 ] model Msgs.ClearWorldsFilter
+            [ searchField model (Msgs.FilterWorlds >> Msgs.FolderMsg)
+            , cancelIconButton [ 0 ] model (Msgs.FolderMsg Msgs.ClearWorldsFilter)
             ]
         ]
 
@@ -107,8 +107,8 @@ worldSection iWorld model folderId world =
                 ]
             ]
         , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "world-buttons" ]
-            [ backupButton [ iWorld ] model (Msgs.StartWorldBackup world.id)
-            , deleteButton [ iWorld ] model (Msgs.StartWorldDelete world.id)
+            [ backupButton [ iWorld ] model (Msgs.FolderMsg (Msgs.StartWorldBackup world.id))
+            , deleteButton [ iWorld ] model (Msgs.FolderMsg (Msgs.StartWorldDelete world.id))
             ]
         , cell [ size All 12 ]
             [ confirmContent
@@ -141,8 +141,8 @@ backupRow : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
 backupRow idx model folderId worldId backup =
     tr []
         [ td [ Table.numeric, Options.cs "button-group" ]
-            [ iconButton idx model "fa fa-trash-o" (Color.color Color.Red Color.S900) (Msgs.DeleteBackup folderId worldId backup.id)
-            , iconButton idx model "fa fa-recycle" (Color.color Color.Green Color.S900) (Msgs.RestoreBackup folderId worldId backup.id)
+            [ iconButton idx model "fa fa-trash-o" (Color.color Color.Red Color.S900) (Msgs.FolderMsg (Msgs.DeleteBackup folderId worldId backup.id))
+            , iconButton idx model "fa fa-recycle" (Color.color Color.Green Color.S900) (Msgs.FolderMsg (Msgs.RestoreBackup folderId worldId backup.id))
             ]
         , td [ Table.numeric ] [ text backup.name ]
         , td [] [ text (DateTime.toISO8601 backup.createdAt) ]

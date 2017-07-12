@@ -9,7 +9,7 @@ import Material.Grid as Grid exposing (Align(..), Device(..), align, cell, grid,
 import Material.Options as Options
 import Material.Textfield as Textfield
 import Models exposing (..)
-import Msgs exposing (Msg)
+import Msgs exposing (FolderMsg, Msg)
 
 
 deleteConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
@@ -20,8 +20,8 @@ deleteConfirm idx model folderId worldId =
             [ cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
                 [ h4 [] [ text "Are you sure you want to delete this world?" ] ]
             , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
-                [ cancelButton idx model Msgs.CancelDeleteWorld
-                , destructiveConfirmButton idx "Delete" "fa fa-trash-o" model (Msgs.DeleteWorld folderId worldId)
+                [ cancelButton idx model (Msgs.FolderMsg Msgs.CancelDeleteWorld)
+                , destructiveConfirmButton idx "Delete" "fa fa-trash-o" model (Msgs.FolderMsg (Msgs.DeleteWorld folderId worldId))
                 ]
             ]
         )
@@ -35,8 +35,8 @@ backupConfirm idx model folderId worldId =
             , cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
                 [ backupNameField idx model ]
             , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
-                [ cancelButton idx model Msgs.CancelWorldBackup
-                , confirmButton idx "Backup" "fa fa-clone" model (Msgs.BackupWorld folderId worldId model.folders.backupName)
+                [ cancelButton idx model (Msgs.FolderMsg Msgs.CancelWorldBackup)
+                , confirmButton idx "Backup" "fa fa-clone" model (Msgs.FolderMsg (Msgs.BackupWorld folderId worldId model.folders.backupName))
                 ]
             ]
         )
@@ -51,7 +51,7 @@ backupNameField idx model =
         , Textfield.floatingLabel
         , Textfield.value model.folders.backupName
         , Options.css "width" "100%"
-        , Options.onInput Msgs.UpdateBackupName
+        , Options.onInput (Msgs.UpdateBackupName >> Msgs.FolderMsg)
         ]
         []
 
