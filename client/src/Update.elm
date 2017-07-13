@@ -63,6 +63,9 @@ update msg model =
             in
             ( { model | route = newRoute }, newCommand )
 
+        Msgs.Poll _ ->
+            ( model, getLocationCommand model.flags.apiUrl model.route )
+
         Msgs.OnWorldDeleted folderId worldId result ->
             case result of
                 Ok _ ->

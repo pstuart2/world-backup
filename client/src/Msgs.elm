@@ -6,12 +6,14 @@ import Material
 import Material.Snackbar as Snackbar
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
+import Time exposing (Time)
 
 
 type Msg
     = Mdl (Material.Msg Msg)
     | Snackbar (Snackbar.Msg Int)
     | DoNothing
+    | Poll Time
     | ChangeLocation String
     | OnLocationChange Location
     | GoBack

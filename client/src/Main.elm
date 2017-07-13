@@ -5,6 +5,7 @@ import Models exposing (Flags, Model, Route, initialModel)
 import Msgs exposing (Msg)
 import Navigation exposing (Location)
 import Routing
+import Time exposing (Time, second)
 import Update exposing (update)
 import View exposing (view)
 
@@ -38,7 +39,10 @@ init flags location =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Material.subscriptions Msgs.Mdl model
+    Sub.batch
+        [ Material.subscriptions Msgs.Mdl model
+        , Time.every (5 * second) Msgs.Poll
+        ]
 
 
 
