@@ -37,6 +37,16 @@ maybeList model =
 
 list : Model -> List Folder -> Html Msg
 list model folders =
+    case folders of
+        [] ->
+            h4 [] [ text "No results..." ]
+
+        _ ->
+            populatedList model folders
+
+
+populatedList : Model -> List Folder -> Html Msg
+populatedList model folders =
     div [ class "grid-outer" ]
         [ headerRow
         , folderBody model folders

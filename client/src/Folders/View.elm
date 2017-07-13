@@ -51,11 +51,24 @@ list model folderId worlds =
         filteredWorlds =
             List.filter worldFilter worlds
     in
-    grid [ Grid.noSpacing ]
-        [ cell [ size All 12 ] [ filter model ]
-        , cell [ size All 12 ]
-            (List.indexedMap viewWorld filteredWorlds)
-        ]
+    case filteredWorlds of
+        [] ->
+            grid [ Grid.noSpacing ]
+                [ cell [ size All 12 ] [ filter model ]
+                , cell [ size All 12 ] [ emptyList ]
+                ]
+
+        _ ->
+            grid [ Grid.noSpacing ]
+                [ cell [ size All 12 ] [ filter model ]
+                , cell [ size All 12 ]
+                    (List.indexedMap viewWorld filteredWorlds)
+                ]
+
+
+emptyList : Html Msg
+emptyList =
+    h4 [] [ text "No results..." ]
 
 
 filter : Model -> Html Msg
