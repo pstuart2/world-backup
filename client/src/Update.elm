@@ -100,7 +100,7 @@ update msg model =
                     ( { model | folders = updateWorld model.folders folderId world }
                     , Cmd.batch
                         [ createCommand (Msgs.FolderMsg Msgs.CancelWorldBackup)
-                        , createToast "World has been deleted"
+                        , createToast "World was backed up"
                         ]
                     )
 

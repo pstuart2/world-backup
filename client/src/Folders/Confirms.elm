@@ -9,10 +9,10 @@ import Material.Grid as Grid exposing (Align(..), Device(..), align, cell, grid,
 import Material.Options as Options
 import Material.Textfield as Textfield
 import Models exposing (..)
-import Msgs exposing (FolderMsg, Msg)
+import Msgs exposing (..)
 
 
-deleteConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
+deleteConfirm : List Int -> Model -> FolderId -> WorldId -> Html Msg
 deleteConfirm idx model folderId worldId =
     inlineWarning
         (grid
@@ -20,14 +20,14 @@ deleteConfirm idx model folderId worldId =
             [ cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
                 [ h4 [] [ text "Are you sure you want to delete this world?" ] ]
             , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
-                [ cancelButton idx model (Msgs.FolderMsg Msgs.CancelDeleteWorld)
-                , destructiveConfirmButton idx "Delete" "fa fa-trash-o" model (Msgs.FolderMsg (Msgs.DeleteWorld folderId worldId))
+                [ cancelButton idx model (CancelDeleteWorld |> FolderMsg)
+                , destructiveConfirmButton "fa fa-trash-o" "Delete" idx model (DeleteWorld folderId worldId |> FolderMsg)
                 ]
             ]
         )
 
 
-backupConfirm : List Int -> Model -> FolderId -> WorldId -> Html.Html Msg
+backupConfirm : List Int -> Model -> FolderId -> WorldId -> Html Msg
 backupConfirm idx model folderId worldId =
     inlineInfo
         (grid []
@@ -35,23 +35,23 @@ backupConfirm idx model folderId worldId =
             , cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
                 [ backupNameField idx model ]
             , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
-                [ cancelButton idx model (Msgs.FolderMsg Msgs.CancelWorldBackup)
-                , confirmButton idx "Backup" "fa fa-clone" model (Msgs.FolderMsg (Msgs.BackupWorld folderId worldId model.folders.backupName))
+                [ cancelButton idx model (CancelWorldBackup |> FolderMsg)
+                , primaryButton "fa fa-clone" "Backup" idx model (BackupWorld folderId worldId model.folders.backupName |> FolderMsg)
                 ]
             ]
         )
 
 
-backupNameField : List Int -> Model -> Html.Html Msg
+backupNameField : List Int -> Model -> Html Msg
 backupNameField idx model =
-    Textfield.render Msgs.Mdl
+    Textfield.render Mdl
         (List.append [ 8 ] idx)
         model.mdl
         [ Textfield.label "Backup name"
         , Textfield.floatingLabel
         , Textfield.value model.folders.backupName
         , Options.css "width" "100%"
-        , Options.onInput (Msgs.UpdateBackupName >> Msgs.FolderMsg)
+        , Options.onInput (UpdateBackupName >> FolderMsg)
         ]
         []
 
@@ -60,7 +60,7 @@ backupNameField idx model =
 -- TODO: These could be in a more generic place
 
 
-inlineInfo : Html.Html Msg -> Html.Html Msg
+inlineInfo : Html Msg -> Html Msg
 inlineInfo content =
     Options.div
         [ Elevation.e2
@@ -70,7 +70,7 @@ inlineInfo content =
         [ content ]
 
 
-inlineWarning : Html.Html Msg -> Html.Html Msg
+inlineWarning : Html Msg -> Html Msg
 inlineWarning content =
     Options.div
         [ Elevation.e2

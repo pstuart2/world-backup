@@ -5,13 +5,12 @@ import Folders.Confirms exposing (..)
 import Folders.Models exposing (Backup, Folder, FolderId, World, WorldId)
 import Html exposing (Html, div, h2, h4, i, text)
 import Html.Attributes exposing (class, href, style, value)
-import Material.Color as Color
 import Material.Grid as Grid exposing (Align(..), Device(..), align, cell, grid, size)
 import Material.Options as Options
 import Material.Table as Table exposing (table, tbody, td, th, thead, tr)
 import Material.Textfield as Textfield
 import Models exposing (..)
-import Msgs exposing (Msg)
+import Msgs exposing (..)
 import RemoteData
 import Time.DateTime as DateTime exposing (DateTime)
 
@@ -50,20 +49,20 @@ list model folderId worlds =
 
         filteredWorlds =
             List.filter worldFilter worlds
-    in
-    case filteredWorlds of
-        [] ->
-            grid [ Grid.noSpacing ]
-                [ cell [ size All 12 ] [ filter model ]
-                , cell [ size All 12 ] [ emptyList ]
-                ]
 
-        _ ->
-            grid [ Grid.noSpacing ]
-                [ cell [ size All 12 ] [ filter model ]
-                , cell [ size All 12 ]
-                    (List.indexedMap viewWorld filteredWorlds)
-                ]
+        content =
+            case filteredWorlds of
+                [] ->
+                    [ emptyList ]
+
+                _ ->
+                    List.indexedMap viewWorld filteredWorlds
+    in
+    grid [ Grid.noSpacing ]
+        [ cell [ size All 12 ] [ filter model ]
+        , cell [ size All 12 ]
+            content
+        ]
 
 
 emptyList : Html Msg
@@ -75,15 +74,15 @@ filter : Model -> Html Msg
 filter model =
     grid []
         [ cell [ size All 12 ]
-            [ searchField model (Msgs.FilterWorlds >> Msgs.FolderMsg)
-            , cancelIconButton [ 0 ] model (Msgs.FolderMsg Msgs.ClearWorldsFilter)
+            [ searchField model (FilterWorlds >> FolderMsg)
+            , cancelIconButton [ 0 ] model (ClearWorldsFilter |> FolderMsg)
             ]
         ]
 
 
 searchField : Model -> (String -> Msg) -> Html.Html Msg
 searchField model msg =
-    Textfield.render Msgs.Mdl
+    Textfield.render Mdl
         [ 7 ]
         model.mdl
         [ Textfield.label "Filter worlds"
@@ -120,8 +119,8 @@ worldSection iWorld model folderId world =
                 ]
             ]
         , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "world-buttons" ]
-            [ backupButton [ iWorld ] model (Msgs.FolderMsg (Msgs.StartWorldBackup world.id))
-            , deleteButton [ iWorld ] model (Msgs.FolderMsg (Msgs.StartWorldDelete world.id))
+            [ backupButton [ iWorld ] model (StartWorldBackup world.id |> FolderMsg)
+            , deleteButton [ iWorld ] model (StartWorldDelete world.id |> FolderMsg)
             ]
         , cell [ size All 12 ]
             [ confirmContent
@@ -154,8 +153,8 @@ backupRow : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
 backupRow idx model folderId worldId backup =
     tr []
         [ td [ Table.numeric, Options.cs "button-group" ]
-            [ iconButton idx model "fa fa-trash-o" (Color.color Color.Red Color.S900) (Msgs.FolderMsg (Msgs.DeleteBackup folderId worldId backup.id))
-            , iconButton idx model "fa fa-recycle" (Color.color Color.Green Color.S900) (Msgs.FolderMsg (Msgs.RestoreBackup folderId worldId backup.id))
+            [ trashButton idx model (DeleteBackup folderId worldId backup.id |> FolderMsg)
+            , recycleButton idx model (RestoreBackup folderId worldId backup.id |> FolderMsg)
             ]
         , td [ Table.numeric ] [ text backup.name ]
         , td [] [ text (DateTime.toISO8601 backup.createdAt) ]
