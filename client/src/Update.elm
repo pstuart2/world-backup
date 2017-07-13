@@ -3,6 +3,8 @@ module Update exposing (..)
 import Debug exposing (log)
 import Folders.Update exposing (..)
 import Material
+import Material.Helpers exposing (cssTransitionStep, delay, map1st, map2nd, pure)
+import Material.Snackbar as Snackbar
 import Models exposing (..)
 import Msgs exposing (Msg)
 import Navigation exposing (back, newUrl)
@@ -24,6 +26,23 @@ update msg model =
 
         Msgs.GoBack ->
             ( model, back 1 )
+
+        Msgs.AddToast message ->
+            addMessage (\k -> Snackbar.toast 0 message) model
+
+        Msgs.Snackbar (Snackbar.Begin k) ->
+            ( model, Cmd.none )
+
+        Msgs.Snackbar (Snackbar.End k) ->
+            ( model, Cmd.none )
+
+        Msgs.Snackbar (Snackbar.Click k) ->
+            ( model, Cmd.none )
+
+        Msgs.Snackbar msg_ ->
+            Snackbar.update msg_ model.snackbar
+                |> map1st (\s -> { model | snackbar = s })
+                |> map2nd (Cmd.map Msgs.Snackbar)
 
         Msgs.FolderMsg msg_ ->
             updateFolder msg_ model
@@ -47,7 +66,7 @@ update msg model =
         Msgs.OnWorldDeleted folderId worldId result ->
             case result of
                 Ok _ ->
-                    ( { model | folders = deleteWorld model.folders folderId worldId }, Cmd.none )
+                    ( { model | folders = deleteWorld model.folders folderId worldId }, createToast "World has been deleted" )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -55,7 +74,7 @@ update msg model =
         Msgs.OnBackupDeleted folderId worldId backupId result ->
             case result of
                 Ok world ->
-                    ( { model | folders = updateWorld model.folders folderId world }, Cmd.none )
+                    ( { model | folders = updateWorld model.folders folderId world }, createToast "Backup has been deleted" )
 
                 Err world ->
                     let
@@ -67,15 +86,20 @@ update msg model =
         Msgs.OnBackupRestored folderId worldId backupId result ->
             case result of
                 Ok _ ->
-                    ( model, Cmd.none )
+                    ( model, createToast "Backup has been restored" )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( model, createToast "There was an error restoring the backup" )
 
         Msgs.OnWorldBackedUp folderId worldId result ->
             case result of
                 Ok world ->
-                    ( { model | folders = updateWorld model.folders folderId world }, sendMessage (Msgs.FolderMsg Msgs.CancelWorldBackup) )
+                    ( { model | folders = updateWorld model.folders folderId world }
+                    , Cmd.batch
+                        [ createCommand (Msgs.FolderMsg Msgs.CancelWorldBackup)
+                        , createToast "World has been deleted"
+                        ]
+                    )
 
                 Err world ->
                     let
@@ -85,7 +109,27 @@ update msg model =
                     ( model, Cmd.none )
 
 
-sendMessage : msg -> Cmd msg
-sendMessage msg =
+createCommand : msg -> Cmd msg
+createCommand msg =
     Task.succeed msg
         |> Task.perform identity
+
+
+createToast : String -> Cmd Msg
+createToast message =
+    createCommand (Msgs.AddToast message)
+
+
+addMessage : (Int -> Snackbar.Contents Int) -> Model -> ( Model, Cmd Msg )
+addMessage f model =
+    let
+        ( snackbar_, effect ) =
+            Snackbar.add (f 0) model.snackbar
+                |> map2nd (Cmd.map Msgs.Snackbar)
+
+        model_ =
+            { model | snackbar = snackbar_ }
+    in
+    ( model_
+    , effect
+    )

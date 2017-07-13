@@ -2,6 +2,7 @@ module Models exposing (..)
 
 import Folders.Models as Folders exposing (BackupId, Folder, FolderId, WorldId)
 import Material
+import Material.Snackbar as Snackbar
 
 
 type Route
@@ -18,6 +19,7 @@ type alias Flags =
 type alias Model =
     { flags : Flags
     , mdl : Material.Model
+    , snackbar : Snackbar.Model Int
     , route : Route
     , folders : Folders.FolderModel
     }
@@ -27,6 +29,7 @@ initialModel : Flags -> Route -> Model
 initialModel flags route =
     { flags = flags
     , mdl = Material.model
+    , snackbar = Snackbar.model
     , route = route
     , folders = Folders.initialModel
     }

@@ -3,16 +3,19 @@ module Msgs exposing (..)
 import Folders.Models exposing (BackupId, Folder, FolderId, World, WorldId)
 import Http
 import Material
+import Material.Snackbar as Snackbar
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 
 
 type Msg
     = Mdl (Material.Msg Msg)
+    | Snackbar (Snackbar.Msg Int)
     | DoNothing
     | ChangeLocation String
     | OnLocationChange Location
     | GoBack
+    | AddToast String
     | FolderMsg FolderMsg
     | OnFetchFolders (WebData (List Folder))
     | OnFetchWorlds FolderId (WebData (List World))

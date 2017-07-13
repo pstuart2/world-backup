@@ -8,6 +8,7 @@ import Html.Attributes exposing (class, href, style)
 import Material.Button as Button
 import Material.Layout as Layout
 import Material.Options as Options exposing (Style)
+import Material.Snackbar as Snackbar
 import Models exposing (Model)
 import Msgs exposing (Msg)
 import RemoteData
@@ -23,7 +24,10 @@ view model =
         { header = [ pageHeader model ]
         , drawer = []
         , tabs = ( [], [] )
-        , main = [ page model ]
+        , main =
+            [ page model
+            , Snackbar.view model.snackbar |> Html.map Msgs.Snackbar
+            ]
         }
 
 
