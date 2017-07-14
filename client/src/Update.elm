@@ -69,7 +69,12 @@ update msg model =
         Msgs.OnWorldDeleted folderId worldId result ->
             case result of
                 Ok _ ->
-                    ( { model | folders = deleteWorld model.folders folderId worldId }, createToast "World has been deleted" )
+                    ( { model | folders = deleteWorld model.folders folderId worldId }
+                    , Cmd.batch
+                        [ createCommand (Msgs.FolderMsg Msgs.CancelConfirm)
+                        , createToast "World has been deleted"
+                        ]
+                    )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -77,7 +82,12 @@ update msg model =
         Msgs.OnBackupDeleted folderId worldId backupId result ->
             case result of
                 Ok world ->
-                    ( { model | folders = updateWorld model.folders folderId world }, createToast "Backup has been deleted" )
+                    ( { model | folders = updateWorld model.folders folderId world }
+                    , Cmd.batch
+                        [ createCommand (Msgs.FolderMsg Msgs.CancelConfirm)
+                        , createToast "Backup has been deleted"
+                        ]
+                    )
 
                 Err world ->
                     let
@@ -89,7 +99,12 @@ update msg model =
         Msgs.OnBackupRestored folderId worldId backupId result ->
             case result of
                 Ok _ ->
-                    ( model, createToast "Backup has been restored" )
+                    ( model
+                    , Cmd.batch
+                        [ createCommand (Msgs.FolderMsg Msgs.CancelConfirm)
+                        , createToast "Backup has been restored"
+                        ]
+                    )
 
                 Err _ ->
                     ( model, createToast "There was an error restoring the backup" )
@@ -99,7 +114,7 @@ update msg model =
                 Ok world ->
                     ( { model | folders = updateWorld model.folders folderId world }
                     , Cmd.batch
-                        [ createCommand (Msgs.FolderMsg Msgs.CancelWorldBackup)
+                        [ createCommand (Msgs.FolderMsg Msgs.CancelConfirm)
                         , createToast "World was backed up"
                         ]
                     )

@@ -7,6 +7,8 @@ import Time.DateTime as DateTime exposing (DateTime)
 type alias FolderModel =
     { createBackupId : Maybe WorldId
     , deleteWorldId : Maybe WorldId
+    , deleteBackupId : Maybe BackupId
+    , restoreBackupId : Maybe BackupId
     , backupName : String
     , worldFilter : String
     , folders : WebData (List Folder)
@@ -17,6 +19,8 @@ initialModel : FolderModel
 initialModel =
     { createBackupId = Nothing
     , deleteWorldId = Nothing
+    , deleteBackupId = Nothing
+    , restoreBackupId = Nothing
     , backupName = ""
     , worldFilter = ""
     , folders = RemoteData.Loading

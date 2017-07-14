@@ -135,7 +135,12 @@ backupsTable : Int -> Model -> FolderId -> WorldId -> List Backup -> Html Msg
 backupsTable iWorld model folderId worldId backups =
     let
         viewBackup id backup =
-            backupRow [ iWorld, id ] model folderId worldId backup
+            if model.folders.restoreBackupId == Just backup.id then
+                backupRestoreConfirmRow [ iWorld, id ] model folderId worldId backup
+            else if model.folders.deleteBackupId == Just backup.id then
+                backupDeleteConfirmRow [ iWorld, id ] model folderId worldId backup
+            else
+                backupRow [ iWorld, id ] model folderId worldId backup
     in
     table [ Options.css "width" "100%" ]
         [ thead []
@@ -153,9 +158,33 @@ backupRow : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
 backupRow idx model folderId worldId backup =
     tr []
         [ td [ Table.numeric, Options.cs "button-group" ]
-            [ trashButton idx model (DeleteBackup folderId worldId backup.id |> FolderMsg)
-            , recycleButton idx model (RestoreBackup folderId worldId backup.id |> FolderMsg)
+            [ trashButton idx model (DeleteBackupConfirm backup.id backup.name |> FolderMsg)
+            , recycleButton idx model (RestoreBackupConfirm backup.id backup.name |> FolderMsg)
             ]
         , td [ Table.numeric ] [ text backup.name ]
         , td [] [ text (DateTime.toISO8601 backup.createdAt) ]
+        ]
+
+
+backupRestoreConfirmRow : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
+backupRestoreConfirmRow idx model folderId worldId backup =
+    tr []
+        [ td
+            [ Options.cs "row-confirm-msg"
+            , Options.attribute (Html.Attributes.colspan 3)
+            ]
+            [ restoreBackupConfirm idx model folderId worldId backup
+            ]
+        ]
+
+
+backupDeleteConfirmRow : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
+backupDeleteConfirmRow idx model folderId worldId backup =
+    tr []
+        [ td
+            [ Options.cs "row-confirm-msg"
+            , Options.attribute (Html.Attributes.colspan 3)
+            ]
+            [ deleteBackupConfirm idx model folderId worldId backup
+            ]
         ]

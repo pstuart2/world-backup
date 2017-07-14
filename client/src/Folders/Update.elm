@@ -11,13 +11,34 @@ updateFolder : FolderMsg -> Model -> ( Model, Cmd Msg )
 updateFolder msg model =
     case msg of
         Msgs.StartWorldDelete worldId ->
-            ( { model | folders = setDeleteWorldId (Just worldId) model.folders }, Cmd.none )
+            ( { model
+                | folders =
+                    cleanConfirmIds model.folders
+                        |> setDeleteWorldId (Just worldId)
+              }
+            , Cmd.none
+            )
 
         Msgs.DeleteWorld folderId worldId ->
             ( model, Api.deleteWorld model.flags.apiUrl folderId worldId )
 
-        Msgs.CancelDeleteWorld ->
-            ( { model | folders = setDeleteWorldId Nothing model.folders }, Cmd.none )
+        Msgs.DeleteBackupConfirm backupId backupName ->
+            ( { model
+                | folders =
+                    cleanConfirmIds model.folders
+                        |> setDeleteBackupId (Just backupId) backupName
+              }
+            , Cmd.none
+            )
+
+        Msgs.RestoreBackupConfirm backupId backupName ->
+            ( { model
+                | folders =
+                    cleanConfirmIds model.folders
+                        |> setRestoreBackupId (Just backupId) backupName
+              }
+            , Cmd.none
+            )
 
         Msgs.DeleteBackup folderId worldId backupId ->
             ( model, Api.deleteBackup model.flags.apiUrl folderId worldId backupId )
@@ -35,13 +56,35 @@ updateFolder msg model =
             ( { model | folders = setWorldFilter "" model.folders }, Cmd.none )
 
         Msgs.StartWorldBackup worldId ->
-            ( { model | folders = setCreateBackupId (Just worldId) model.folders }, Cmd.none )
+            ( { model
+                | folders =
+                    cleanConfirmIds model.folders
+                        |> setCreateBackupId (Just worldId)
+              }
+            , Cmd.none
+            )
 
         Msgs.UpdateBackupName name ->
-            ( { model | folders = setCreateBackupName name model.folders }, Cmd.none )
+            ( { model
+                | folders =
+                    cleanConfirmIds model.folders
+                        |> setCreateBackupName name
+              }
+            , Cmd.none
+            )
 
-        Msgs.CancelWorldBackup ->
-            ( { model | folders = setCreateBackupId Nothing model.folders }, Cmd.none )
+        Msgs.CancelConfirm ->
+            ( { model | folders = cleanConfirmIds model.folders }, Cmd.none )
+
+
+setDeleteBackupId : Maybe BackupId -> String -> FolderModel -> FolderModel
+setDeleteBackupId backupId backupName oldFv =
+    { oldFv | deleteBackupId = backupId, backupName = backupName }
+
+
+setRestoreBackupId : Maybe BackupId -> String -> FolderModel -> FolderModel
+setRestoreBackupId backupId backupName oldFv =
+    { oldFv | restoreBackupId = backupId, backupName = backupName }
 
 
 setDeleteWorldId : Maybe WorldId -> FolderModel -> FolderModel
@@ -57,6 +100,17 @@ setCreateBackupId worldId oldFv =
 setCreateBackupName : String -> FolderModel -> FolderModel
 setCreateBackupName name oldFv =
     { oldFv | backupName = name }
+
+
+cleanConfirmIds : FolderModel -> FolderModel
+cleanConfirmIds oldModel =
+    { oldModel
+        | deleteWorldId = Nothing
+        , createBackupId = Nothing
+        , deleteBackupId = Nothing
+        , restoreBackupId = Nothing
+        , backupName = ""
+    }
 
 
 setWorldFilter : String -> FolderModel -> FolderModel

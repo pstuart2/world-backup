@@ -41,7 +41,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Material.subscriptions Msgs.Mdl model
-        , Time.every (5 * second) Msgs.Poll
+        , Time.every (20 * second) Msgs.Poll
         ]
 
 

@@ -1,8 +1,9 @@
-module Folders.Confirms exposing (backupConfirm, deleteConfirm)
+module Folders.Confirms exposing (backupConfirm, deleteBackupConfirm, deleteConfirm, restoreBackupConfirm)
 
 import Folders.Buttons exposing (..)
-import Folders.Models exposing (FolderId, WorldId)
-import Html exposing (Html, div, h2, h4, i, text)
+import Folders.Models exposing (Backup, BackupId, FolderId, WorldId)
+import Html exposing (Html, div, h2, h4, i, span, text)
+import Html.Attributes exposing (class)
 import Material.Color as Color
 import Material.Elevation as Elevation
 import Material.Grid as Grid exposing (Align(..), Device(..), align, cell, grid, size)
@@ -20,8 +21,48 @@ deleteConfirm idx model folderId worldId =
             [ cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
                 [ h4 [] [ text "Are you sure you want to delete this world?" ] ]
             , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
-                [ cancelButton idx model (CancelDeleteWorld |> FolderMsg)
+                [ cancelButton idx model (CancelConfirm |> FolderMsg)
                 , destructiveConfirmButton "fa fa-trash-o" "Delete" idx model (DeleteWorld folderId worldId |> FolderMsg)
+                ]
+            ]
+        )
+
+
+restoreBackupConfirm : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
+restoreBackupConfirm idx model folderId worldId backup =
+    inlineInfo
+        (grid
+            []
+            [ cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
+                [ span []
+                    [ text "Are you sure you want to restore backup "
+                    , span [ class "confirm-target" ] [ text backup.name ]
+                    , text "?"
+                    ]
+                ]
+            , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
+                [ cancelButton idx model (CancelConfirm |> FolderMsg)
+                , primaryButton "fa fa-recycle" "Restore" idx model (RestoreBackup folderId worldId backup.id |> FolderMsg)
+                ]
+            ]
+        )
+
+
+deleteBackupConfirm : List Int -> Model -> FolderId -> WorldId -> Backup -> Html Msg
+deleteBackupConfirm idx model folderId worldId backup =
+    inlineWarning
+        (grid
+            []
+            [ cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
+                [ span []
+                    [ text "Are you sure you want to delete backup "
+                    , span [ class "confirm-target" ] [ text backup.name ]
+                    , text "?"
+                    ]
+                ]
+            , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
+                [ cancelButton idx model (CancelConfirm |> FolderMsg)
+                , destructiveConfirmButton "fa fa-trash-o" "Delete" idx model (DeleteBackup folderId worldId backup.id |> FolderMsg)
                 ]
             ]
         )
@@ -35,7 +76,7 @@ backupConfirm idx model folderId worldId =
             , cell [ size Desktop 9, size Tablet 8, size Phone 4 ]
                 [ backupNameField idx model ]
             , cell [ size Desktop 3, size Tablet 8, size Phone 4, align Middle, Options.cs "button-group" ]
-                [ cancelButton idx model (CancelWorldBackup |> FolderMsg)
+                [ cancelButton idx model (CancelConfirm |> FolderMsg)
                 , primaryButton "fa fa-clone" "Backup" idx model (BackupWorld folderId worldId model.folders.backupName |> FolderMsg)
                 ]
             ]
@@ -54,10 +95,6 @@ backupNameField idx model =
         , Options.onInput (UpdateBackupName >> FolderMsg)
         ]
         []
-
-
-
--- TODO: These could be in a more generic place
 
 
 inlineInfo : Html Msg -> Html Msg

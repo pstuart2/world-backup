@@ -30,12 +30,13 @@ type Msg
 type FolderMsg
     = StartWorldBackup WorldId
     | UpdateBackupName String
-    | CancelWorldBackup
+    | CancelConfirm
     | BackupWorld FolderId WorldId String
     | FilterWorlds String
     | ClearWorldsFilter
     | StartWorldDelete WorldId
     | DeleteWorld FolderId WorldId
-    | CancelDeleteWorld
+    | DeleteBackupConfirm BackupId String
     | DeleteBackup FolderId WorldId BackupId
+    | RestoreBackupConfirm BackupId String
     | RestoreBackup FolderId WorldId BackupId
