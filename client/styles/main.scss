@@ -1,0 +1,45 @@
+$gridHeaderRowSeparatorColor: #2C3F49;
+$gridRowSeparatorColor: lighten($gridHeaderRowSeparatorColor, 50%);
+
+div.elm-overlay {
+  z-index: 2
+}
+
+.button-group {
+  text-align: right;
+  button {
+	margin-left: 10px;
+
+	i {
+	  margin-right: 5px;
+	}
+  }
+}
+
+.world {
+  margin-bottom: 40px;
+
+  .world-buttons {
+	@extend .button-group;
+
+  }
+
+  .row-confirm-msg {
+	font-size: large;
+	text-align: left;
+	.confirm-target {
+	  font-weight: bold;
+	}
+  }
+
+  .world-title {
+	h2 {
+	  margin-top: 8px;
+	  margin-bottom: 0;
+	  i {
+		margin-right: 10px;
+	  }
+	}
+  }
+}
+

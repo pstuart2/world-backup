@@ -25,3 +25,5 @@ _testmain.go
 .idea/workspace.xml
 data.json
 vendor/
+world-backup/
+/server/config.json

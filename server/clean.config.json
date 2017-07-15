@@ -1,0 +1,13 @@
+{
+  "port": 3030,
+  "watchDirs": [
+    "${APPDATA}\\.minecraft\\saves"
+  ],
+  "backupDir": "${USERPROFILE}\\Documents\\MCBackups",
+  "checkInterval": "1m",
+  "log": {
+    "file": "",
+    "level": "debug"
+  },
+  "staticRoot": "../client/"
+}
