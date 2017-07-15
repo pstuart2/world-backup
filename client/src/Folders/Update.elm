@@ -65,13 +65,7 @@ updateFolder msg model =
             )
 
         Msgs.UpdateBackupName name ->
-            ( { model
-                | folders =
-                    cleanConfirmIds model.folders
-                        |> setCreateBackupName name
-              }
-            , Cmd.none
-            )
+            ( { model | folders = setCreateBackupName name model.folders }, Cmd.none )
 
         Msgs.CancelConfirm ->
             ( { model | folders = cleanConfirmIds model.folders }, Cmd.none )
