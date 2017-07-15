@@ -45,10 +45,24 @@ list model folderId worlds =
             worldSection id model folderId world
 
         worldFilter world =
-            String.contains model.folders.worldFilter world.name
+            String.contains (String.toLower model.folders.worldFilter) (String.toLower world.name)
 
         filteredWorlds =
             List.filter worldFilter worlds
+
+        lowerCompare a b =
+            case compare (String.toLower b.name) (String.toLower a.name) of
+                LT ->
+                    GT
+
+                GT ->
+                    LT
+
+                EQ ->
+                    EQ
+
+        sortedWorlds =
+            List.sortWith lowerCompare filteredWorlds
 
         content =
             case filteredWorlds of
@@ -56,7 +70,7 @@ list model folderId worlds =
                     [ emptyList ]
 
                 _ ->
-                    List.indexedMap viewWorld filteredWorlds
+                    List.indexedMap viewWorld sortedWorlds
     in
     grid [ Grid.noSpacing ]
         [ cell [ size All 12 ] [ filter model ]
