@@ -1,4 +1,4 @@
-memo = "fa4753ec98e2c459f33d27a6d443b11e54f37ebd3acf2516abc92598670a9dc3"
+memo = "5027f74cb266d9770a34f7939ea0f1edcefef6c2a2a83d815c607ba3cdbc158f"
 
 [[projects]]
   name = "github.com/Sirupsen/logrus"
@@ -50,13 +50,13 @@ memo = "fa4753ec98e2c459f33d27a6d443b11e54f37ebd3acf2516abc92598670a9dc3"
 
 [[projects]]
   name = "github.com/labstack/echo"
-  packages = ["."]
+  packages = [".","middleware"]
   revision = "1049c9613cd371b7ea8f219404c9a821734781ed"
   version = "v3.1.0"
 
 [[projects]]
   name = "github.com/labstack/gommon"
-  packages = ["color","log"]
+  packages = ["bytes","color","log","random"]
   revision = "1121fd3e243c202482226a7afe4dcd07ffc4139a"
   version = "v0.2.1"
 

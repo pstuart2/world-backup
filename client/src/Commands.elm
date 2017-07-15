@@ -1,7 +1,6 @@
 module Commands exposing (..)
 
 import Json.Decode as Decode exposing (Decoder, andThen, fail, string, succeed)
-import RemoteData exposing (WebData)
 import Time.DateTime as DateTime exposing (DateTime)
 
 

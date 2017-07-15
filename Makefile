@@ -1,17 +1,36 @@
 dist=world-backup
+exe=WorldBackup
 
-default: clean setup server client
+default: setup server client
 
 clean:
-	rm -rf $(dist)
+	rm -rf $(dist); cd client; yarn run clean; cd ..
 
-setup:
+setup: clean
 	mkdir $(dist); mkdir $(dist)/client; mkdir $(dist)/server
 
-server: FORCE
-	GOOS=windows go build -o ./$(dist)/server/WorldBackup.exe ./server; cp server/clean.config.json $(dist)/server/config.json
+server: buildLinux buildWindows
+	cp server/clean.config.json $(dist)/server/config.json; \
+	cp run.bat $(dist); \
+	cp run.sh $(dist); \
+	chmod 755 $(dist)/run.sh
 
-client: FORCE
-	cd client; yarn run build; cd ..; cp -R client/dist/* $(dist)/client
+client: buildClient
+	 cp -R client/dist/* $(dist)/client
+
+buildClient: ensureClient
+	cd client; yarn run build; cd ..
+
+buildLinux: ensureServer
+	GOOS=linux go build -o ./$(dist)/server/$(exe) ./server
+
+buildWindows: ensureServer
+	GOOS=windows go build -o ./$(dist)/server/$(exe).exe ./server
+
+ensureServer: FORCE
+	cd server; dep ensure; cd ..
+
+ensureClient: FORCE
+	cd client; yarn install --silent; cd ..
 
 FORCE:
