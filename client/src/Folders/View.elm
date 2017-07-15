@@ -51,15 +51,7 @@ list model folderId worlds =
             List.filter worldFilter worlds
 
         lowerCompare a b =
-            case compare (String.toLower b.name) (String.toLower a.name) of
-                LT ->
-                    GT
-
-                GT ->
-                    LT
-
-                EQ ->
-                    EQ
+            compare (String.toLower a.name) (String.toLower b.name)
 
         sortedWorlds =
             List.sortWith lowerCompare filteredWorlds
