@@ -126,6 +126,10 @@ var checkOneDir = func(w *Watcher, f *data.Folder) {
 	for k, v := range worldDirs {
 		log.Infof("%d - %s (isDir: %t) %d", k, v.Name(), v.IsDir(), v.ModTime().Unix())
 
+		if !v.IsDir() {
+			continue
+		}
+
 		world := f.GetWorldByName(v.Name())
 		if world == nil {
 			world = f.AddWorld(v.Name())

@@ -293,11 +293,16 @@ func TestWatcher_CheckOneDir(t *testing.T) {
 			wDir1.On("ModTime").Return(now.Add(time.Second * -100))
 
 			wDir2 := new(FileInfoMock)
-			wDir2.On("Name").Return("World two")
-			wDir2.On("IsDir").Return(true)
+			wDir2.On("Name").Return("Random File")
+			wDir2.On("IsDir").Return(false)
 			wDir2.On("ModTime").Return(now.Add(time.Second * -100))
 
-			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{wDir1, wDir2}, nil)
+			wDir3 := new(FileInfoMock)
+			wDir3.On("Name").Return("World Two")
+			wDir3.On("IsDir").Return(true)
+			wDir3.On("ModTime").Return(now.Add(time.Second * -100))
+
+			fsMock.On("ReadDir", "/home/world").Return([]os.FileInfo{wDir1, wDir2, wDir3}, nil)
 
 			f := data.Folder{Path: "/home/world"}
 			world := f.AddWorld("World two")
